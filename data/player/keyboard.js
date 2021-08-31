@@ -11,7 +11,7 @@ const seekToTime = function (value) {
 
 const keyboard = {};
 const v = document.querySelector('video');
-let timer = null;
+const config = { timer: null, stopped: true };
 const rules = [
   {
     condition(meta, code, shift) {
@@ -158,13 +158,16 @@ const rules = [
       return code === 'KeyX';
     },
     action() {
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
+      if (config.timer) {
+        clearTimeout(config.timer);
+        config.timer = null;
         notify.display(`Toggle Speed Stopped!:`);
+        config.stopped = true;
       } else {
-        timer = toggleSpeed(5, true);
+        config.stopped = false;
         notify.display(`Toggle Speed Started Fast:`);
+        config.timer = toggleSpeed(5, true);
+        config.isFast = true;
       }
       return true;
     },
@@ -174,13 +177,16 @@ const rules = [
       return code === 'KeyZ';
     },
     action() {
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
+      if (config.timer) {
+        clearTimeout(config.timer);
+        config.timer = null;
         notify.display(`Toggle Speed Stopped!:`);
+        config.stopped = true;
       } else {
-        timer = toggleSpeed(5);
+        config.stopped = true;
         notify.display(`Toggle Speed Started Normal:`);
+        config.timer = toggleSpeed(5);
+        config.isFast = false;
       }
       return true;
     },
@@ -206,7 +212,7 @@ function toggleSpeed(
     .concat([2, 2.5, 3, 3.2, 3.4]);
 
   let index = 0;
-  timer = setInterval(() => {
+  const timer = setInterval(() => {
     if (isFAST) {
       setSpeed(rangeFast[++index % rangeFast.length]);
     } else {
@@ -226,22 +232,26 @@ function setSpeed(newSpeed) {
   speed.title = (() => {
     return `CURRENT: ${newSpeed}:\nAdjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
   })();
-  //   notify.display(`Speed: ${newSpeed}`);
+  notify.display(`Speed: ${newSpeed}`);
 }
 
 document
   .querySelector('video')
   .addEventListener('play', () => {
-    clearTimeout(timer);
-    timer = toggleSpeed(5);
-    notify.display(`Toggle Speed Started Normal:`);
+    if (config.stopped) return;
+    clearTimeout(config.timer);
+    config.timer = config.isFast
+      ? toggleSpeed(5, true)
+      : toggleSpeed(5);
+    notify.display(`Toggle Speed Started:`);
   });
 document
   .querySelector('video')
   .addEventListener('pause', () => {
-    clearTimeout(timer);
-    timer = null;
-    notify.display(`Toggle Speed Started Stopped:`);
+    //  if (config.stopped) return;
+    clearTimeout(config.timer);
+    config.timer = null;
+    notify.display(`Toggle Speed Stopped:`);
   });
 
 document.addEventListener('keydown', (e) => {
