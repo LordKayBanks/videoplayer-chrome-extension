@@ -3,7 +3,8 @@
   --color: #b2b8bd;
   --fill-color: #fff;
   --active-fill-color: #4487fb;
-  --hover-color: #252623;
+  /* --hover-color: #252623; */
+  --hover-color: #55584f;
 }
 body {
   font-size: 13px;

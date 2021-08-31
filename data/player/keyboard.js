@@ -1,12 +1,14 @@
 import notify from './notify.js';
 
-const seekToTime = function (player, value) {
-  var seekToTime = player.currentTime + value;
-  if (seekToTime < 0 || seekToTime > player.duration)
-    return;
+const seekToTime = function (value) {
+  const video = document.querySelector('video');
 
-  player.currentTime = seekToTime;
+  let seekToTime = video.currentTime + value;
+  if (seekToTime < 0 || seekToTime > video.duration) return;
+
+  video.currentTime = seekToTime;
 };
+
 const keyboard = {};
 const v = document.querySelector('video');
 let timer = null;
@@ -16,11 +18,20 @@ const rules = [
       return code === 'ArrowRight';
     },
     action() {
-      // document.getElementById('seek-forward').click();
-      seekToTime(v, 60_0000);
+      seekToTime(45);
       return true;
     },
   },
+  {
+    condition(meta, code, shift) {
+      return code === 'ArrowLeft';
+    },
+    action() {
+      seekToTime(-45);
+      return true;
+    },
+  },
+  //======================
   {
     condition(meta, code, shift) {
       return code === 'ArrowUp';
@@ -163,12 +174,10 @@ const rules = [
 
 function toggleSpeed(intervalInSeconds = 10) {
   let range = [
-    1, 1.5, 2, 2.5, 3, 3.2, 3.4, 3.4, 3.6, 3.6, 3.8, 3.8,
-    3.8, 4, 4, 4,
+    1, 1.5, 2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6,
+    3.7, 3.7, 3.7, 3.8, 3.8, 3.8, 4,
   ];
-  //   let range = [3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6];
-  //   let range = [4.6, 4.4, 4.2, 4, 3.8, 3.6, 3.4, 3.2, 3];
-  //   let range = [3, 3.5, 4, 4.5, 5];
+
   let index = 0;
   timer = setInterval(() => {
     //  setSpeed(
