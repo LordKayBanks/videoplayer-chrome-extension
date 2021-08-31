@@ -163,43 +163,58 @@ const rules = [
         timer = null;
         notify.display(`Toggle Speed Stopped!:`);
       } else {
-        timer = toggleSpeed(10);
-        //   timer = toggleSpeed(2, 4, 5);
-        notify.display(`Toggle Speed Started:`);
+        timer = toggleSpeed(5, true);
+        notify.display(`Toggle Speed Started Fast:`);
+      }
+      return true;
+    },
+  },
+  {
+    condition(meta, code) {
+      return code === 'KeyZ';
+    },
+    action() {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+        notify.display(`Toggle Speed Stopped!:`);
+      } else {
+        timer = toggleSpeed(5);
+        notify.display(`Toggle Speed Started Normal:`);
       }
       return true;
     },
   },
 ];
 
-function toggleSpeed(intervalInSeconds = 10) {
-  let range = [
-    1, 1.5, 2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6,
-    3.7, 3.7, 3.7, 3.8, 3.8, 3.8, 4,
-  ];
+function toggleSpeed(
+  intervalInSeconds = 10,
+  isFAST = false
+) {
+  let rangeFast = [
+    1.5, 2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7,
+    3.7, 3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
+  ]
+    .sort((a, b) => (a < b ? 1 : -1))
+    .concat([2, 2.5, 3, 3.2, 3.4, 3.6, 3.8]);
+
+  let rangeBasic = [
+    1.5, 2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4,
+    3.4, 3.4, 3.5, 3.5, 3.5, 3.5, 3.5,
+  ]
+    .sort((a, b) => (a < b ? 1 : -1))
+    .concat([2, 2.5, 3, 3.2, 3.4]);
 
   let index = 0;
   timer = setInterval(() => {
-    //  setSpeed(
-    //    range[Math.floor(Math.random() * range.length)]
-    //  );
-    setSpeed(range[++index % range.length]);
+    if (isFAST) {
+      setSpeed(rangeFast[++index % rangeFast.length]);
+    } else {
+      setSpeed(rangeBasic[++index % rangeBasic.length]);
+    }
   }, intervalInSeconds * 1000);
   return timer;
 }
-
-// function toggleSpeed(min, max, intervalInSeconds) {
-//     let toggle = false;
-//     timer = setInterval(() => {
-//       if (toggle) {
-//         setSpeed(min);
-//       } else {
-//         setSpeed(max);
-//       }
-//       toggle = !toggle;
-//     }, intervalInSeconds * 1000);
-//   return timer;
-// }
 
 function setSpeed(newSpeed) {
   const speed = document.getElementById('speed');
@@ -213,6 +228,21 @@ function setSpeed(newSpeed) {
   })();
   //   notify.display(`Speed: ${newSpeed}`);
 }
+
+document
+  .querySelector('video')
+  .addEventListener('play', () => {
+    clearTimeout(timer);
+    timer = toggleSpeed(5);
+    notify.display(`Toggle Speed Started Normal:`);
+  });
+document
+  .querySelector('video')
+  .addEventListener('pause', () => {
+    clearTimeout(timer);
+    timer = null;
+    notify.display(`Toggle Speed Started Stopped:`);
+  });
 
 document.addEventListener('keydown', (e) => {
   const meta = e.metaKey || e.ctrlKey;
