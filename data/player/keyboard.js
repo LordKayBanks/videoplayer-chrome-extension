@@ -198,18 +198,18 @@ function toggleSpeed(
   isFAST = false
 ) {
   let rangeFast = [
-    1.5, 2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7,
-    3.7, 3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
+    2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7, 3.7,
+    3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
   ]
     .sort((a, b) => (a < b ? 1 : -1))
-    .concat([2, 2.5, 3, 3.2, 3.4, 3.6, 3.8]);
+    .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
 
   let rangeBasic = [
-    1.5, 2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4,
-    3.4, 3.4, 3.5, 3.5, 3.5, 3.5, 3.5,
+    2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4, 3.4,
+    3.4, 3.5, 3.5, 3.5, 3.5, 3.5,
   ]
     .sort((a, b) => (a < b ? 1 : -1))
-    .concat([2, 2.5, 3, 3.2, 3.4]);
+    .concat([2.5, 3, 3.2, 3.4]);
 
   let index = 0;
   const timer = setInterval(() => {
@@ -240,15 +240,15 @@ document
   .addEventListener('play', () => {
     if (config.stopped) return;
     clearTimeout(config.timer);
-    config.timer = config.isFast
-      ? toggleSpeed(5, true)
-      : toggleSpeed(5);
+    config.isFast
+      ? (config.timer = toggleSpeed(5, true))
+      : (config.timer = toggleSpeed(5));
     notify.display(`Toggle Speed Started:`);
   });
 document
   .querySelector('video')
-  .addEventListener('pause', () => {
-    //  if (config.stopped) return;
+  .addEventListener('ended', () => {
+    if (config.stopped) return;
     clearTimeout(config.timer);
     config.timer = null;
     notify.display(`Toggle Speed Stopped:`);
