@@ -2,9 +2,11 @@ import notify from './notify.js';
 
 const seekToTime = function (value) {
   const video = document.querySelector('video');
-
   let seekToTime = video.currentTime + value;
-  if (seekToTime < 0 || seekToTime > video.duration) return;
+
+  if (seekToTime < 0) {
+    video.currentTime = 0;
+  } else if (seekToTime > video.duration) video.duration;
 
   video.currentTime = seekToTime;
 };
@@ -15,10 +17,19 @@ const config = { timer: null, stopped: true };
 const rules = [
   {
     condition(meta, code, shift) {
+      return code === 'KeyF';
+    },
+    action() {
+      toggleFullScreen();
+      return true;
+    },
+  },
+  {
+    condition(meta, code, shift) {
       return code === 'ArrowRight';
     },
     action() {
-      seekToTime(45);
+      seekToTime(30);
       return true;
     },
   },
@@ -27,7 +38,7 @@ const rules = [
       return code === 'ArrowLeft';
     },
     action() {
-      seekToTime(-45);
+      seekToTime(-30);
       return true;
     },
   },
@@ -38,8 +49,9 @@ const rules = [
       // return code === 'KeyP' && meta && shift;
     },
     action() {
-      document.getElementById('previous').click();
-
+      const video = document.querySelector('video');
+      if (video.playbackRate == 4.5) setSpeed(3.5);
+      else setSpeed(4.5);
       return true;
     },
   },
@@ -49,11 +61,39 @@ const rules = [
       // return code === 'KeyN' && meta && shift;
     },
     action() {
-      document.getElementById('next').click();
+      // document.getElementById('next').click();
+      const video = document.querySelector('video');
+      if (video.paused) {
+        video.play();
+      } else {
+        video.pause();
+      }
 
       return true;
     },
   },
+  //=================
+  {
+    condition(meta, code, shift) {
+      return code === 'KeyB';
+      // return code === 'KeyP' && meta && shift;
+    },
+    action() {
+      document.getElementById('previous').click();
+      return true;
+    },
+  },
+  {
+    condition(meta, code, shift) {
+      return code === 'KeyN';
+      // return code === 'KeyN' && meta && shift;
+    },
+    action() {
+      document.getElementById('next').click();
+      return true;
+    },
+  },
+  //=================
   {
     // toggle playlist
     condition(meta, code) {
@@ -104,17 +144,18 @@ const rules = [
   //       return true;
   //     },
   //   },
-  {
-    condition(meta, code) {
-      return code === 'KeyO';
-      // return code === 'KeyX' && meta;
-    },
-    action() {
-      document.getElementById('speed').click();
 
-      return true;
-    },
-  },
+  //   {
+  //     condition(meta, code) {
+  //       return code === 'KeyO';
+  //       // return code === 'KeyX' && meta;
+  //     },
+  //     action() {
+  //       document.getElementById('speed').click();
+
+  //       return true;
+  //     },
+  //   },
   //====================
   {
     condition(meta, code) {
@@ -265,6 +306,44 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
-keyboard.register = (rule) => rules.push(rule);
 
+function toggleFullScreen() {
+  if (
+    !document.fullscreenElement && // alternative standard method
+    !document.mozFullScreenElement &&
+    !document.webkitFullscreenElement &&
+    !document.msFullscreenElement
+  ) {
+    // current working methods
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (
+      document.documentElement.msRequestFullscreen
+    ) {
+      document.documentElement.msRequestFullscreen();
+    } else if (
+      document.documentElement.mozRequestFullScreen
+    ) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (
+      document.documentElement.webkitRequestFullscreen
+    ) {
+      document.documentElement.webkitRequestFullscreen(
+        Element.ALLOW_KEYBOARD_INPUT
+      );
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+
+keyboard.register = (rule) => rules.push(rule);
 export default keyboard;
