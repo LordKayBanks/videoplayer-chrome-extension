@@ -138,7 +138,7 @@ const playlist = {
     } else {
       video.src = s.src;
     }
-    video.playbackRate = parseInt(speed.dataset.mode);
+    video.playbackRate = parseFloat(speed.dataset.mode);
     document.title =
       (s.name || s.src) +
       ' :: ' +
