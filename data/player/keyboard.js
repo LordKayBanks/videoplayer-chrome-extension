@@ -1,5 +1,25 @@
 import notify from './notify.js';
 
+//   let rangeFast = [
+//     2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7, 3.7,
+//     3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
+//   ]
+//     .sort((a, b) => (a < b ? 1 : -1))
+//     .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
+const rangeFast = [
+  3.5, 3.5, 3.6, 3.6, 3.7, 3.7, 3.7, 3.8, 3.8, 3.8, 3.9,
+  3.9, 3.9, 4, 4, 4,
+]
+  .sort((a, b) => (a < b ? 1 : -1))
+  .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
+
+const rangeBasic = [
+  2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4, 3.4,
+  3.4, 3.5, 3.5, 3.5, 3.5, 3.5,
+]
+  .sort((a, b) => (a < b ? 1 : -1))
+  .concat([2.5, 3, 3.2, 3.4]);
+
 const seekToTime = function (value) {
   const video = document.querySelector('video');
   let seekToTime = video.currentTime + value;
@@ -48,10 +68,16 @@ const rules = [
       return code === 'ArrowUp';
       // return code === 'KeyP' && meta && shift;
     },
-    action() {
+    action(event) {
+      event.preventDefault();
       const video = document.querySelector('video');
-      if (video.playbackRate == 4.5) setSpeed(3.5);
-      else setSpeed(4.5);
+      if (video.playbackRate < 4) {
+        setSpeed(4);
+        updateSpeedIcon(4);
+      } else {
+        setSpeed(3.5);
+        updateSpeedIcon(3.5);
+      }
       return true;
     },
   },
@@ -60,8 +86,8 @@ const rules = [
       return code === 'ArrowDown';
       // return code === 'KeyN' && meta && shift;
     },
-    action() {
-      // document.getElementById('next').click();
+    action(event) {
+      event.preventDefault();
       const video = document.querySelector('video');
       if (video.paused) {
         video.play();
@@ -163,6 +189,7 @@ const rules = [
     },
     action() {
       setSpeed(3);
+      updateSpeedIcon(3);
       return true;
     },
   },
@@ -172,6 +199,7 @@ const rules = [
     },
     action() {
       setSpeed(2);
+      updateSpeedIcon(2);
       return true;
     },
   },
@@ -181,6 +209,7 @@ const rules = [
     },
     action() {
       setSpeed(3.5);
+      updateSpeedIcon(3.5);
       return true;
     },
   },
@@ -190,10 +219,12 @@ const rules = [
     },
     action() {
       setSpeed(4);
+      updateSpeedIcon(4);
       return true;
     },
   },
   //=============================
+
   {
     condition(meta, code) {
       return code === 'KeyX';
@@ -238,20 +269,6 @@ function toggleSpeed(
   intervalInSeconds = 10,
   isFAST = false
 ) {
-  let rangeFast = [
-    2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7, 3.7,
-    3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
-  ]
-    .sort((a, b) => (a < b ? 1 : -1))
-    .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
-
-  let rangeBasic = [
-    2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4, 3.4,
-    3.4, 3.5, 3.5, 3.5, 3.5, 3.5,
-  ]
-    .sort((a, b) => (a < b ? 1 : -1))
-    .concat([2.5, 3, 3.2, 3.4]);
-
   let index = 0;
   const timer = setInterval(() => {
     if (isFAST) {
@@ -263,16 +280,27 @@ function toggleSpeed(
   return timer;
 }
 
-function setSpeed(newSpeed) {
+export function updateSpeedIcon(newSpeed) {
   const speed = document.getElementById('speed');
-  const video = document.querySelector('video');
+  const text = document.querySelector(
+    '#speed > svg > text'
+  );
 
   newSpeed = parseFloat(newSpeed);
-  video.playbackRate = newSpeed;
-  speed.dataset.mode = newSpeed;
+  speed.dataset.mode = `${newSpeed}X`;
+  text.innerHTML = `${newSpeed}X`;
   speed.title = (() => {
-    return `CURRENT: ${newSpeed}:\nAdjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
+    return `CURRENT: ${newSpeed}x:\n
+    Adjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
   })();
+}
+
+function setSpeed(newSpeed) {
+  const video = document.querySelector('video');
+  newSpeed = parseFloat(newSpeed);
+  video.playbackRate = newSpeed;
+
+  updateSpeedIcon(newSpeed);
   notify.display(`Speed: ${newSpeed}`);
 }
 

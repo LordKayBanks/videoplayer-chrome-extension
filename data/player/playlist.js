@@ -1,5 +1,6 @@
 /* global MediaMetadata */
 import notify from './notify.js';
+import { updateSpeedIcon } from './keyboard.js';
 
 const root = document.getElementById('playlist');
 const video = document.querySelector('video');
@@ -295,12 +296,15 @@ repeat.addEventListener('click', (e) => {
 });
 
 speed.addEventListener('click', (e) => {
-  const modes = ['2x', '3x', '3.5x', '4x', '4.5x', '5x'];
+  const modes = ['2X', '3X', '3.5X', '4X', '4.5X', '5X'];
   const index =
-    (modes.indexOf(e.target.dataset.mode) + 1) % 6;
+    (modes.indexOf(e.target.dataset.mode) + 1) %
+    modes.length;
   speed.dataset.mode = modes[index];
+  updateSpeedIcon(modes[index]);
   speed.title = (() => {
-    return `CURRENT: ${modes[index]}:\nAdjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
+    return `CURRENT: ${modes[index]}:\n
+    Adjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
   })();
   video.playbackRate = parseFloat(modes[index]);
 });

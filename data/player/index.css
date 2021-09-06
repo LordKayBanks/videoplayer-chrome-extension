@@ -154,24 +154,8 @@ input[type='checkbox']:checked + label > svg {
 #repeat[data-mode='repeat-one'] path:last-child {
   display: none;
 }
-#speed[data-mode='2x'] text:not(:nth-child(1)) {
-  display: none;
-}
-#speed[data-mode='3x'] text:not(:nth-child(2)) {
-  display: none;
-}
-#speed[data-mode='3.5x'] text:not(:nth-child(3)) {
-  display: none;
-}
-#speed[data-mode='4x'] text:not(:nth-child(4)) {
-  display: none;
-}
-#speed[data-mode='4.5x'] text:not(:nth-child(5)) {
-  display: none;
-}
-#speed[data-mode='5x'] text:not(:nth-child(6)) {
-  display: none;
-}
+
+/* ========== */
 #boost[data-mode='2b'] text:not(:nth-child(1)) {
   display: none;
 }
