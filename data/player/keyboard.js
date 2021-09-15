@@ -112,7 +112,6 @@ const rules = [
         setSpeed(15);
         updateSpeedIcon(15);
       }
-
       return true;
     },
   },
