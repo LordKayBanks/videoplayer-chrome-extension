@@ -53,6 +53,8 @@ let lastKeypressTime = 0;
 const keyboard = {};
 const v = document.querySelector('video');
 const config = { timer: null, stopped: true };
+
+const video = document.querySelector('video');
 const rules = [
   {
     condition(meta, code, shift) {
@@ -101,29 +103,16 @@ const rules = [
     },
     action(event) {
       event.preventDefault();
-      const video = document.querySelector('video');
       video.volume = 1;
 
-      let thisKeypressTime = new Date();
-      if (thisKeypressTime - lastKeypressTime <= delta) {
+      if (video.playbackRate > 3.5) {
+        setSpeed(3.5);
+        updateSpeedIcon(3.5);
+      } else {
         setSpeed(15);
         updateSpeedIcon(15);
-        video.muted = true;
-
-        // optional - if we'd rather not detect a triple-press
-        // as a second double-press, reset the timestamp
-        thisKeypressTime = 0;
-      } else {
-        if (video.playbackRate < 4) {
-          setSpeed(4);
-          updateSpeedIcon(4);
-        } else {
-          setSpeed(3.5);
-          updateSpeedIcon(3.5);
-        }
-        video.muted = false;
       }
-      lastKeypressTime = thisKeypressTime;
+
       return true;
     },
   },
@@ -266,44 +255,31 @@ const rules = [
   },
   {
     condition(meta, code) {
-      return code === 'Semicolon';
+      return code === 'ShiftRight';
     },
     action() {
-      setSpeed(3);
-      updateSpeedIcon(3);
+      let thisKeypressTime = new Date();
+      if (thisKeypressTime - lastKeypressTime <= delta) {
+        setSpeed(4);
+        updateSpeedIcon(4);
+
+        // optional - if we'd rather not detect a triple-press
+        // as a second double-press, reset the timestamp
+        thisKeypressTime = 0;
+      } else {
+        if (video.playbackRate < 3) {
+          setSpeed(3);
+          updateSpeedIcon(3);
+        } else {
+          setSpeed(2);
+          updateSpeedIcon(2);
+        }
+      }
+      lastKeypressTime = thisKeypressTime;
       return true;
     },
   },
-  {
-    condition(meta, code) {
-      return code === 'Quote';
-    },
-    action() {
-      setSpeed(2);
-      updateSpeedIcon(2);
-      return true;
-    },
-  },
-  {
-    condition(meta, code) {
-      return code === 'Backslash';
-    },
-    action() {
-      setSpeed(3.5);
-      updateSpeedIcon(3.5);
-      return true;
-    },
-  },
-  {
-    condition(meta, code) {
-      return code === 'Enter';
-    },
-    action() {
-      setSpeed(4);
-      updateSpeedIcon(4);
-      return true;
-    },
-  },
+
   //=============================
 
   {
@@ -369,6 +345,7 @@ export function updateSpeedIcon(newSpeed) {
     return `CURRENT: ${newSpeed}x:\n
     Adjust player's speed (2X [DEFAULT], 3X, 3.5X, 4X, 4.5X and 5X)\n (Ctrl + X or Command + X)`;
   })();
+  newSpeed >= 6 ? (video.muted = true) : (video.muted = false);
 }
 
 function setSpeed(newSpeed) {
