@@ -47,7 +47,7 @@ function increaseSpeed(value = 0.25) {
   updateSpeedIcon(newSpeed);
 }
 
-const delta = 500;
+const delta = 250;
 let lastKeypressTime = 0;
 
 const keyboard = {};
@@ -81,7 +81,7 @@ const rules = [
     },
     action(event) {
       event.preventDefault();
-      seekToTime(20);
+      seekToTime(13.5);
       return true;
     },
   },
@@ -91,7 +91,7 @@ const rules = [
     },
     action(event) {
       event.preventDefault();
-      seekToTime(-20);
+      seekToTime(-13.5);
       return true;
     },
   },
@@ -112,7 +112,6 @@ const rules = [
         setSpeed(15);
         updateSpeedIcon(15);
       }
-
       return true;
     },
   },
@@ -160,7 +159,7 @@ const rules = [
   {
     // toggle playlist
     condition(meta, code) {
-      return code === 'KeyP';
+      return code === 'Slash';
       // return code === 'KeyP' && meta;
     },
     action() {
