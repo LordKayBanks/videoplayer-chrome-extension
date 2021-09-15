@@ -69,10 +69,7 @@ const playlist = {
   play(index = playlist.index, delay = 0) {
     clearTimeout(delayId);
     if (delay) {
-      delayId = setTimeout(
-        () => playlist.play(index, 0),
-        delay
-      );
+      delayId = setTimeout(() => playlist.play(index, 0), delay);
       return;
     }
     if (video.src) {
@@ -83,54 +80,36 @@ const playlist = {
       index === -1 ? 0 : index % playlist.entries.length;
     if (playlist.index + 1 === playlist.entries.length) {
       next.classList.add('disabled');
-      navigator.mediaSession.setActionHandler(
-        'nexttrack',
-        null
-      );
+      navigator.mediaSession.setActionHandler('nexttrack', null);
     } else {
       next.classList.remove('disabled');
-      navigator.mediaSession.setActionHandler(
-        'nexttrack',
-        () => next.click()
+      navigator.mediaSession.setActionHandler('nexttrack', () =>
+        next.click()
       );
     }
     if (playlist.index === 0) {
       previous.classList.add('disabled');
-      navigator.mediaSession.setActionHandler(
-        'previoustrack',
-        null
-      );
+      navigator.mediaSession.setActionHandler('previoustrack', null);
     } else {
       previous.classList.remove('disabled');
-      navigator.mediaSession.setActionHandler(
-        'previoustrack',
-        () => previous.click()
+      navigator.mediaSession.setActionHandler('previoustrack', () =>
+        previous.click()
       );
     }
     if (playlist.entries.length) {
       document
         .getElementById('p-button-view')
         .classList.remove('disabled');
-      document
-        .getElementById('shuffle')
-        .classList.remove('disabled');
+      document.getElementById('shuffle').classList.remove('disabled');
     } else {
-      document
-        .getElementById('shuffle')
-        .classList.add('disabled');
+      document.getElementById('shuffle').classList.add('disabled');
     }
-    navigator.mediaSession.setActionHandler(
-      'seekbackward',
-      () => {
-        video.currentTime -= 10;
-      }
-    );
-    navigator.mediaSession.setActionHandler(
-      'seekforward',
-      () => {
-        video.currentTime += 10;
-      }
-    );
+    navigator.mediaSession.setActionHandler('seekbackward', () => {
+      video.currentTime -= 10;
+    });
+    navigator.mediaSession.setActionHandler('seekforward', () => {
+      video.currentTime += 10;
+    });
 
     const s = playlist.entries[playlist.index];
     if (s.name) {
@@ -141,17 +120,13 @@ const playlist = {
     }
     video.playbackRate = parseFloat(speed.dataset.mode);
     document.title =
-      (s.name || s.src) +
-      ' :: ' +
-      chrome.runtime.getManifest().name;
+      (s.name || s.src) + ' :: ' + chrome.runtime.getManifest().name;
     navigator.mediaSession.metadata = new MediaMetadata({
       title: document.title,
     });
 
     // active entry
-    for (const e of [
-      ...document.querySelectorAll('li.active'),
-    ]) {
+    for (const e of [...document.querySelectorAll('li.active')]) {
       e.classList.remove('active');
     }
     s.e.classList.add('active');
@@ -161,9 +136,7 @@ const playlist = {
       video.currentTime = currentTime;
     }
     video.origin = s;
-    video
-      .play()
-      .catch((e) => notify.display(e.message, 2000));
+    video.play().catch((e) => notify.display(e.message, 2000));
     window.setTimeout(() => video.focus(), 100);
   },
   stopVideo() {
@@ -178,11 +151,12 @@ const playlist = {
   cueVideo(files) {
     playlist.entries.push(...files);
     const f = document.createDocumentFragment();
+
     for (const file of files) {
       const li = document.createElement('li');
       const name = document.createElement('span');
       name.dataset.id = 'name';
-      name.textContent = file.name || file.src;
+      name.textContent = `${file.name}` || `${file.src}`;
       const duration = document.createElement('span');
       duration.dataset.id = 'duration';
       duration.textContent = '--:--';
@@ -192,6 +166,7 @@ const playlist = {
       li.file = file;
       f.appendChild(li);
     }
+
     root.appendChild(f);
   },
   onStateChange(c) {
@@ -205,27 +180,15 @@ video.addEventListener('timeupdate', () => {
 });
 video.addEventListener('abort', () => (playlist.state = 0));
 video.addEventListener('error', () => (playlist.state = 0));
-video.addEventListener(
-  'emptied',
-  () => (playlist.state = 0)
-);
+video.addEventListener('emptied', () => (playlist.state = 0));
 video.addEventListener('ended', () => {
   stats.set(video.origin, 0);
   playlist.state = 0;
-  navigator.mediaSession.setActionHandler(
-    'seekbackward',
-    null
-  );
-  navigator.mediaSession.setActionHandler(
-    'seekforward',
-    null
-  );
+  navigator.mediaSession.setActionHandler('seekbackward', null);
+  navigator.mediaSession.setActionHandler('seekforward', null);
 
   if (playlist.index + 1 !== playlist.entries.length) {
-    playlist.play(
-      playlist.index + 1,
-      playlist.configs.delay
-    );
+    playlist.play(playlist.index + 1, playlist.configs.delay);
   } else {
     if (repeat.dataset.mode === 'repeat-all') {
       playlist.play(0, playlist.configs.delay);
@@ -235,28 +198,17 @@ video.addEventListener('ended', () => {
   }
 });
 video.addEventListener('play', () => (playlist.state = 1));
-video.addEventListener(
-  'playing',
-  () => (playlist.state = 1)
-);
+video.addEventListener('playing', () => (playlist.state = 1));
 video.addEventListener('pause', () => (playlist.state = 2));
-video.addEventListener(
-  'waiting',
-  () => (playlist.state = 3)
-);
-video.addEventListener(
-  'loadstart',
-  () => (playlist.state = 3)
-);
+video.addEventListener('waiting', () => (playlist.state = 3));
+video.addEventListener('loadstart', () => (playlist.state = 3));
 video.addEventListener('loadedmetadata', () => {
   const d = video.duration;
   const h = Math.floor(d / 3600);
   const m = Math.floor((d % 3600) / 60);
   const s = Math.floor((d % 3600) % 60);
 
-  video.origin.e.querySelector(
-    'span[data-id=duration]'
-  ).textContent =
+  video.origin.e.querySelector('span[data-id=duration]').textContent =
     ('0' + h).substr(-2) +
     ':' +
     ('0' + m).substr(-2) +
@@ -290,16 +242,14 @@ next.addEventListener('click', () =>
 
 repeat.addEventListener('click', (e) => {
   const modes = ['no-repeat', 'repeat-all', 'repeat-one'];
-  const index =
-    (modes.indexOf(e.target.dataset.mode) + 1) % 3;
+  const index = (modes.indexOf(e.target.dataset.mode) + 1) % 3;
   repeat.dataset.mode = modes[index];
 });
 
 speed.addEventListener('click', (e) => {
   const modes = ['2X', '3X', '3.5X', '4X', '4.5X', '5X'];
   const index =
-    (modes.indexOf(e.target.dataset.mode) + 1) %
-    modes.length;
+    (modes.indexOf(e.target.dataset.mode) + 1) % modes.length;
   speed.dataset.mode = modes[index];
   updateSpeedIcon(modes[index]);
   speed.title = (() => {
@@ -312,8 +262,7 @@ speed.addEventListener('click', (e) => {
 boost.addEventListener('click', (e) => {
   const modes = ['2b', '3b', '4b'];
   //   const modes = ['1b', '2b', '3b', '4b'];
-  const index =
-    (modes.indexOf(e.target.dataset.mode) + 1) % 3;
+  const index = (modes.indexOf(e.target.dataset.mode) + 1) % 3;
   boost.dataset.mode = modes[index];
   setTimeout(() => {
     video.boost = parseInt(modes[index]);

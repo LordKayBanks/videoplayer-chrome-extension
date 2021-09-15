@@ -17,7 +17,7 @@ storage
   .get({
     repeat: 'no-repeat',
     volume: 0.8,
-    speed: 4.5,
+    speed: 4.0,
   })
   .then((prefs) => {
     document.getElementById('repeat').dataset.mode =

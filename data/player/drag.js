@@ -6,7 +6,7 @@ const drag = {
 };
 
 const drop = async (es) => {
-  const files = [];
+  let files = [];
   const entries = es
     .map((f) =>
       f.webkitGetAsEntry
@@ -62,6 +62,12 @@ const drop = async (es) => {
     }
   }
 
+  files = files.sort(
+    (a, b) => parseInt(a.name) - parseInt(b.name)
+  );
+  //   files = files.sort((a, b) =>
+  //     b.name.localeCompare(a.name)
+  //   );
   if (files.length) {
     for (const c of drag.cs) {
       c(files);
