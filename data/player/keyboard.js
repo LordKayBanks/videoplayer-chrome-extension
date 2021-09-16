@@ -47,21 +47,113 @@ function increaseSpeed(value = 0.25) {
   updateSpeedIcon(newSpeed);
 }
 
-const delta = 250;
-let lastKeypressTime = 0;
+const shiftKeyDoublePressConfig = {
+  lastKeypressTime: null,
+  delta: 250,
+};
 
 const keyboard = {};
 const v = document.querySelector('video');
 const config = { timer: null, stopped: true };
 
 const video = document.querySelector('video');
+const replayConfig = {
+  firstPosition: 0,
+  lastPosition: 0,
+  unsubscribe: null,
+  forwardOffset: 60,
+  backOffset: 30,
+};
+const convertToNearest60 = (num) => Math.round(num / 60) * 60;
 const rules = [
+  {
+    condition(meta, code, shift) {
+      if (
+        code === 'Minus' ||
+        code === 'Equal' ||
+        code === 'Digit9' ||
+        code === 'Digit0'
+      ) {
+        return true;
+      }
+    },
+    action(e) {
+      if (e.code === 'Digit9') {
+        replayConfig.firstPosition = Math.max(
+          replayConfig.firstPosition - 30,
+          0
+        );
+        replayConfig.firstPosition = parseInt(
+          replayConfig.firstPosition
+        );
+        video.currentTime = replayConfig.firstPosition;
+      } else if (e.code === 'Digit0') {
+        replayConfig.firstPosition = Math.min(
+          replayConfig.firstPosition + 30,
+          replayConfig.lastPosition - 30,
+          video.duration
+        );
+        replayConfig.firstPosition = parseInt(
+          replayConfig.firstPosition
+        );
+        video.currentTime = replayConfig.firstPosition;
+      } else if (e.code === 'Minus') {
+        replayConfig.lastPosition = Math.max(
+          replayConfig.lastPosition - 30,
+          replayConfig.firstPosition + 30,
+          0
+        );
+        replayConfig.lastPosition = parseInt(
+          replayConfig.lastPosition
+        );
+        //   video.currentTime = replayConfig.firstPosition;
+      } else if (e.code === 'Equal') {
+        replayConfig.lastPosition = Math.min(
+          replayConfig.lastPosition + 30,
+          video.duration
+        );
+        replayConfig.lastPosition = parseInt(
+          replayConfig.lastPosition
+        );
+        //   video.currentTime = replayConfig.firstPosition;
+      }
+
+      notify.display(
+        `Replay:\r\nFirstPosition=${toMinutesandSeconds(
+          replayConfig.firstPosition
+        )}\r\nLastPosition=${toMinutesandSeconds(
+          replayConfig.lastPosition
+        )}
+        `
+      );
+      return true;
+    },
+  },
+  {
+    condition(meta, code, shift) {
+      // return code === 'Period';
+      return code === 'Enter';
+    },
+    action() {
+      replayCut();
+      return true;
+    },
+  },
+  {
+    condition(meta, code, shift) {
+      // return code === 'Period';
+      return code === 'Enter';
+    },
+    action() {
+      replayCut();
+      return true;
+    },
+  },
   {
     condition(meta, code, shift) {
       return code === 'KeyM';
     },
     action() {
-      const video = document.querySelector('video');
       video.muted = !video.muted;
       return true;
     },
@@ -81,7 +173,7 @@ const rules = [
     },
     action(event) {
       event.preventDefault();
-      seekToTime(13.5);
+      seekToTime(10);
       return true;
     },
   },
@@ -91,7 +183,7 @@ const rules = [
     },
     action(event) {
       event.preventDefault();
-      seekToTime(-13.5);
+      seekToTime(-10);
       return true;
     },
   },
@@ -218,7 +310,7 @@ const rules = [
   //====================
   {
     condition(meta, code) {
-      return code === 'Minus';
+      return code === 'KeyO';
     },
     action() {
       reduceSpeed(5);
@@ -227,7 +319,7 @@ const rules = [
   },
   {
     condition(meta, code) {
-      return code === 'Equal';
+      return code === 'KeyP';
     },
     action() {
       increaseSpeed(5);
@@ -258,7 +350,11 @@ const rules = [
     },
     action() {
       let thisKeypressTime = new Date();
-      if (thisKeypressTime - lastKeypressTime <= delta) {
+      if (
+        thisKeypressTime -
+          shiftKeyDoublePressConfig.lastKeypressTime <=
+        shiftKeyDoublePressConfig.delta
+      ) {
         setSpeed(4);
         updateSpeedIcon(4);
 
@@ -274,7 +370,7 @@ const rules = [
           updateSpeedIcon(2);
         }
       }
-      lastKeypressTime = thisKeypressTime;
+      shiftKeyDoublePressConfig.lastKeypressTime = thisKeypressTime;
       return true;
     },
   },
@@ -320,6 +416,70 @@ const rules = [
     },
   },
 ];
+
+function replayCut() {
+  if (replayConfig.unsubscribe) {
+    clearInterval(replayConfig.unsubscribe);
+    replayConfig.unsubscribe = null;
+    replayConfig.firstPosition = 0;
+    notify.display('Replay: Stopped!');
+  } else {
+    replayConfig.firstPosition = Math.max(
+      0,
+      convertToNearest60(video.currentTime) - replayConfig.backOffset
+    );
+
+    replayConfig.lastPosition = Math.min(
+      video.duration,
+      convertToNearest60(video.currentTime) +
+        replayConfig.forwardOffset
+    );
+
+    video.currentTime = replayConfig.firstPosition;
+    replayConfig.unsubscribe = setInterval(() => {
+      if (video.currentTime >= replayConfig.lastPosition - 10) {
+        video.currentTime = replayConfig.firstPosition;
+        notify.display(
+          `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
+            replayConfig.firstPosition
+          )}\r\nLastPosition=${toMinutesandSeconds(
+            replayConfig.lastPosition
+          )}`
+        );
+      }
+    }, 2 * 1000);
+
+    notify.display(
+      `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
+        replayConfig.firstPosition
+      )}\r\nLastPosition=${toMinutesandSeconds(
+        replayConfig.lastPosition
+      )}`
+    );
+  }
+}
+// function replayCut() {
+//   if (replayConfig.firstPosition == 0) {
+//     replayConfig.firstPosition = video.currentTime;
+//     notify.display('Replay: First Position Set');
+//   } else {
+//     if (replayConfig.unsubscribe) {
+//       clearInterval(replayConfig.unsubscribe);
+//       replayConfig.unsubscribe = null;
+//       replayConfig.firstPosition = 0;
+//       notify.display('Replay: Stopped!');
+//     } else {
+//       replayConfig.lastPosition = video.currentTime;
+//       video.currentTime = replayConfig.firstPosition;
+//       replayConfig.unsubscribe = setInterval(() => {
+//         if (video.currentTime >= replayConfig.lastPosition) {
+//           video.currentTime = replayConfig.firstPosition;
+//         }
+//       }, 2000);
+//       notify.display('Replay: Started!');
+//     }
+//   }
+// }
 
 function toggleSpeed(intervalInSeconds = 10, isFAST = false) {
   let index = 0;
@@ -372,6 +532,9 @@ document.querySelector('video').addEventListener('ended', () => {
   if (config.stopped) return;
   clearTimeout(config.timer);
   config.timer = null;
+
+  clearInterval(replayConfig.unsubscribe);
+  replayConfig = {};
   notify.display(`Toggle Speed Stopped:`);
 });
 
@@ -387,6 +550,50 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+var multipleKeysMap = {};
+function handleMultipleKeyPress(evt) {
+  let { keyCode, type } = evt || Event; // to deal with IE
+  let isKeyDown = type == 'keydown';
+  multipleKeysMap[keyCode] = isKeyDown;
+
+  if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[189]) {
+    //   backspace & Minus
+    replayConfig.firstPosition = Math.max(
+      replayConfig.firstPosition - 30,
+      0
+    );
+    replayConfig.lastPosition = Math.min(
+      replayConfig.firstPosition + 120,
+      video.duration
+    );
+    video.currentTime = replayConfig.firstPosition;
+  } else if (
+    isKeyDown &&
+    multipleKeysMap[8] &&
+    multipleKeysMap[187]
+  ) {
+    //   backspace & Equal
+    replayConfig.lastPosition = Math.min(
+      replayConfig.lastPosition + 30,
+      video.duration
+    );
+    replayConfig.firstPosition = Math.max(
+      replayConfig.lastPosition - 120,
+      0
+    );
+    video.currentTime = replayConfig.firstPosition;
+  }
+}
+window.addEventListener('keyup', handleMultipleKeyPress);
+window.addEventListener('keydown', handleMultipleKeyPress);
+
+function toMinutesandSeconds(seconds) {
+  const format = (val) => `0${Math.floor(val)}`.slice(-2);
+  const hours = seconds / 3600;
+  const minutes = (seconds % 3600) / 60;
+
+  return [hours, minutes, seconds % 60].map(format).join(':');
+}
 function toggleFullScreen() {
   if (
     !document.fullscreenElement && // alternative standard method
