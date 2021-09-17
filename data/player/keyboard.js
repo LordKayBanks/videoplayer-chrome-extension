@@ -63,6 +63,7 @@ const replayConfig = {
   unsubscribe: null,
   endOffset: 120,
   startOffset: 30,
+  cachedPlaybackRate: 2.0,
 };
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const rules = [
@@ -420,19 +421,22 @@ function replayCut() {
     clearInterval(replayConfig.unsubscribe);
     replayConfig.unsubscribe = null;
     replayConfig.startPosition = 0;
+
+    setSpeed(replayConfig.cachedPlaybackRate || 3);
     notify.display('Replay: Stopped!');
   } else {
     replayConfig.startPosition = Math.max(
       convertToNearest30(video.currentTime) -
-        replayConfig.startOffset,
+        replayConfig.startOffset * 2,
       0
     );
-
     replayConfig.endPosition = Math.min(
-      replayConfig.startPosition + replayConfig.endOffset,
+      replayConfig.startPosition + replayConfig.startOffset * 2,
       video.duration
     );
 
+    replayConfig.cachedPlaybackRate = video.playbackRate;
+    setSpeed(2);
     video.currentTime = replayConfig.startPosition;
     replayConfig.unsubscribe = setInterval(() => {
       if (
