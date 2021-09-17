@@ -58,13 +58,13 @@ const config = { timer: null, stopped: true };
 
 const video = document.querySelector('video');
 const replayConfig = {
-  firstPosition: 0,
-  lastPosition: 0,
+  startPosition: 0,
+  endPosition: 120,
   unsubscribe: null,
-  forwardOffset: 60,
-  backOffset: 30,
+  endOffset: 120,
+  startOffset: 30,
 };
-const convertToNearest60 = (num) => Math.round(num / 60) * 60;
+const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const rules = [
   {
     condition(meta, code, shift) {
@@ -79,50 +79,48 @@ const rules = [
     },
     action(e) {
       if (e.code === 'Digit9') {
-        replayConfig.firstPosition = Math.max(
-          replayConfig.firstPosition - 30,
+        replayConfig.startPosition = Math.max(
+          replayConfig.startPosition - replayConfig.startOffset,
           0
         );
-        replayConfig.firstPosition = parseInt(
-          replayConfig.firstPosition
+        replayConfig.startPosition = parseInt(
+          replayConfig.startPosition
         );
-        video.currentTime = replayConfig.firstPosition;
+        video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Digit0') {
-        replayConfig.firstPosition = Math.min(
-          replayConfig.firstPosition + 30,
-          replayConfig.lastPosition - 30,
+        replayConfig.startPosition = Math.min(
+          replayConfig.startPosition + replayConfig.startOffset,
+          convertToNearest30(replayConfig.endPosition) -
+            replayConfig.endOffset,
           video.duration
         );
-        replayConfig.firstPosition = parseInt(
-          replayConfig.firstPosition
+        replayConfig.startPosition = parseInt(
+          replayConfig.startPosition
         );
-        video.currentTime = replayConfig.firstPosition;
+        video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Minus') {
-        replayConfig.lastPosition = Math.max(
-          replayConfig.lastPosition - 30,
-          replayConfig.firstPosition + 30,
+        replayConfig.endPosition = Math.max(
+          convertToNearest30(replayConfig.endPosition) -
+            replayConfig.startOffset,
+          replayConfig.startPosition + replayConfig.endOffset,
           0
         );
-        replayConfig.lastPosition = parseInt(
-          replayConfig.lastPosition
-        );
-        //   video.currentTime = replayConfig.firstPosition;
+        replayConfig.endPosition = parseInt(replayConfig.endPosition);
+        //   video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Equal') {
-        replayConfig.lastPosition = Math.min(
-          replayConfig.lastPosition + 30,
+        replayConfig.endPosition = Math.min(
+          replayConfig.endPosition + replayConfig.startOffset,
           video.duration
         );
-        replayConfig.lastPosition = parseInt(
-          replayConfig.lastPosition
-        );
-        //   video.currentTime = replayConfig.firstPosition;
+        replayConfig.endPosition = parseInt(replayConfig.endPosition);
+        //   video.currentTime = replayConfig.startPosition;
       }
 
       notify.display(
         `Replay:\r\nFirstPosition=${toMinutesandSeconds(
-          replayConfig.firstPosition
+          replayConfig.startPosition
         )}\r\nLastPosition=${toMinutesandSeconds(
-          replayConfig.lastPosition
+          replayConfig.endPosition
         )}
         `
       );
@@ -421,59 +419,62 @@ function replayCut() {
   if (replayConfig.unsubscribe) {
     clearInterval(replayConfig.unsubscribe);
     replayConfig.unsubscribe = null;
-    replayConfig.firstPosition = 0;
+    replayConfig.startPosition = 0;
     notify.display('Replay: Stopped!');
   } else {
-    replayConfig.firstPosition = Math.max(
-      0,
-      convertToNearest60(video.currentTime) - replayConfig.backOffset
+    replayConfig.startPosition = Math.max(
+      convertToNearest30(video.currentTime) -
+        replayConfig.startOffset,
+      0
     );
 
-    replayConfig.lastPosition = Math.min(
-      video.duration,
-      convertToNearest60(video.currentTime) +
-        replayConfig.forwardOffset
+    replayConfig.endPosition = Math.min(
+      replayConfig.startPosition + replayConfig.endOffset,
+      video.duration
     );
 
-    video.currentTime = replayConfig.firstPosition;
+    video.currentTime = replayConfig.startPosition;
     replayConfig.unsubscribe = setInterval(() => {
-      if (video.currentTime >= replayConfig.lastPosition - 10) {
-        video.currentTime = replayConfig.firstPosition;
+      if (
+        video.currentTime >= replayConfig.endPosition - 10 ||
+        video.currentTime < replayConfig.startPosition
+      ) {
+        video.currentTime = replayConfig.startPosition;
         notify.display(
           `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
-            replayConfig.firstPosition
+            replayConfig.startPosition
           )}\r\nLastPosition=${toMinutesandSeconds(
-            replayConfig.lastPosition
+            replayConfig.endPosition
           )}`
         );
       }
-    }, 2 * 1000);
+    }, 1000);
 
     notify.display(
       `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
-        replayConfig.firstPosition
+        replayConfig.startPosition
       )}\r\nLastPosition=${toMinutesandSeconds(
-        replayConfig.lastPosition
+        replayConfig.endPosition
       )}`
     );
   }
 }
 // function replayCut() {
-//   if (replayConfig.firstPosition == 0) {
-//     replayConfig.firstPosition = video.currentTime;
+//   if (replayConfig.startPosition == 0) {
+//     replayConfig.startPosition = video.currentTime;
 //     notify.display('Replay: First Position Set');
 //   } else {
 //     if (replayConfig.unsubscribe) {
 //       clearInterval(replayConfig.unsubscribe);
 //       replayConfig.unsubscribe = null;
-//       replayConfig.firstPosition = 0;
+//       replayConfig.startPosition = 0;
 //       notify.display('Replay: Stopped!');
 //     } else {
-//       replayConfig.lastPosition = video.currentTime;
-//       video.currentTime = replayConfig.firstPosition;
+//       replayConfig.endPosition = video.currentTime;
+//       video.currentTime = replayConfig.startPosition;
 //       replayConfig.unsubscribe = setInterval(() => {
-//         if (video.currentTime >= replayConfig.lastPosition) {
-//           video.currentTime = replayConfig.firstPosition;
+//         if (video.currentTime >= replayConfig.endPosition) {
+//           video.currentTime = replayConfig.startPosition;
 //         }
 //       }, 2000);
 //       notify.display('Replay: Started!');
@@ -558,30 +559,34 @@ function handleMultipleKeyPress(evt) {
 
   if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[189]) {
     //   backspace & Minus
-    replayConfig.firstPosition = Math.max(
-      replayConfig.firstPosition - 30,
+    replayConfig.startPosition = Math.max(
+      replayConfig.startPosition - replayConfig.startOffset,
       0
     );
-    replayConfig.lastPosition = Math.min(
-      replayConfig.firstPosition + 120,
+    replayConfig.endPosition = Math.min(
+      replayConfig.startPosition + replayConfig.endOffset,
       video.duration
     );
-    video.currentTime = replayConfig.firstPosition;
+    video.currentTime = replayConfig.startPosition;
   } else if (
     isKeyDown &&
     multipleKeysMap[8] &&
     multipleKeysMap[187]
   ) {
     //   backspace & Equal
-    replayConfig.lastPosition = Math.min(
-      replayConfig.lastPosition + 30,
+    replayConfig.endPosition = Math.min(
+      convertToNearest30(replayConfig.endPosition) +
+        replayConfig.startOffset,
       video.duration
     );
-    replayConfig.firstPosition = Math.max(
-      replayConfig.lastPosition - 120,
+    replayConfig.startPosition = Math.max(
+      convertToNearest30(replayConfig.endPosition) -
+        replayConfig.endOffset,
       0
     );
-    video.currentTime = replayConfig.firstPosition;
+    //  console.error('dn-startPosition==: ', replayConfig.startPosition);
+    //  console.error('dn-endPosition: ', replayConfig.endPosition);
+    video.currentTime = replayConfig.startPosition;
   }
 }
 window.addEventListener('keyup', handleMultipleKeyPress);
