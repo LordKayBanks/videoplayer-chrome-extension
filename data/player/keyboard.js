@@ -65,6 +65,16 @@ const replayConfig = {
   startOffset: 30,
   cachedPlaybackRate: 2.0,
 };
+const notifyReplayStatus = () =>
+  notify.display(
+    `Replay: is ${
+      !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
+    }\r\nStartPosition: ${toMinutesandSeconds(
+      replayConfig.startPosition
+    )}\r\nEndPosition:  ${toMinutesandSeconds(
+      replayConfig.endPosition
+    )}`
+  );
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const rules = [
   {
@@ -116,25 +126,21 @@ const rules = [
         replayConfig.endPosition = parseInt(replayConfig.endPosition);
         //   video.currentTime = replayConfig.startPosition;
       }
+      notifyReplayStatus();
 
-      notify.display(
-        `Replay:\r\nFirstPosition=${toMinutesandSeconds(
-          replayConfig.startPosition
-        )}\r\nLastPosition=${toMinutesandSeconds(
-          replayConfig.endPosition
-        )}
-        `
-      );
       return true;
     },
   },
   {
     condition(meta, code, shift) {
-      // return code === 'Period';
-      return code === 'Enter';
+      return code === 'Enter' || code === 'Backslash';
     },
-    action() {
-      replayCut();
+    action(e) {
+      if (e.code === 'Enter') {
+        replayCut();
+      } else if (e.code === 'Backslash') {
+        notifyReplayStatus();
+      }
       return true;
     },
   },
@@ -420,9 +426,10 @@ function replayCut() {
   if (replayConfig.unsubscribe) {
     clearInterval(replayConfig.unsubscribe);
     replayConfig.unsubscribe = null;
-    replayConfig.startPosition = 0;
+    //  replayConfig.startPosition = 0;
 
     setSpeed(replayConfig.cachedPlaybackRate || 3);
+    video.currentTime = replayConfig.endPosition;
     notify.display('Replay: Stopped!');
   } else {
     replayConfig.startPosition = Math.max(
@@ -440,27 +447,15 @@ function replayCut() {
     video.currentTime = replayConfig.startPosition;
     replayConfig.unsubscribe = setInterval(() => {
       if (
-        video.currentTime >= replayConfig.endPosition - 10 ||
+        video.currentTime >= replayConfig.endPosition - 5 ||
         video.currentTime < replayConfig.startPosition
       ) {
         video.currentTime = replayConfig.startPosition;
-        notify.display(
-          `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
-            replayConfig.startPosition
-          )}\r\nLastPosition=${toMinutesandSeconds(
-            replayConfig.endPosition
-          )}`
-        );
+        notifyReplayStatus();
       }
     }, 1000);
 
-    notify.display(
-      `Replay:  <<===>>\r\nFirstPosition=${toMinutesandSeconds(
-        replayConfig.startPosition
-      )}\r\nLastPosition=${toMinutesandSeconds(
-        replayConfig.endPosition
-      )}`
-    );
+    notifyReplayStatus();
   }
 }
 // function replayCut() {
