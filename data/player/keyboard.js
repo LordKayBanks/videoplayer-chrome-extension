@@ -133,24 +133,23 @@ const rules = [
   },
   {
     condition(meta, code, shift) {
-      return code === 'Enter' || code === 'Backslash';
+      return (
+        code === 'Enter' ||
+        code === 'Backslash' ||
+        code === 'Quote' ||
+        code === 'Semicolon'
+      );
     },
     action(e) {
-      if (e.code === 'Enter') {
-        replayCut();
-      } else if (e.code === 'Backslash') {
+      if (e.code === 'Backslash') {
+        replayCut(65);
+      } else if (e.code === 'Quote') {
+        replayCut(35);
+      } else if (e.code === 'Semicolon') {
+        replayCut(20);
+      } else if (e.code === 'Enter') {
         notifyReplayStatus();
       }
-      return true;
-    },
-  },
-  {
-    condition(meta, code, shift) {
-      // return code === 'Period';
-      return code === 'Enter';
-    },
-    action() {
-      replayCut();
       return true;
     },
   },
@@ -422,7 +421,7 @@ const rules = [
   },
 ];
 
-function replayCut() {
+function replayCut(offSet) {
   if (replayConfig.unsubscribe) {
     clearInterval(replayConfig.unsubscribe);
     replayConfig.unsubscribe = null;
@@ -433,16 +432,15 @@ function replayCut() {
     notify.display('Replay: Stopped!');
   } else {
     replayConfig.startPosition = Math.max(
-      convertToNearest30(video.currentTime) -
-        replayConfig.startOffset * 2,
+      convertToNearest30(video.currentTime) - offSet,
       0
     );
     replayConfig.endPosition = Math.min(
-      replayConfig.startPosition + replayConfig.startOffset * 2,
+      replayConfig.startPosition + offSet,
       video.duration
     );
 
-    replayConfig.cachedPlaybackRate = video.playbackRate;
+    //  replayConfig.cachedPlaybackRate = video.playbackRate;
     setSpeed(2);
     video.currentTime = replayConfig.startPosition;
     replayConfig.unsubscribe = setInterval(() => {
@@ -508,7 +506,7 @@ export function updateSpeedIcon(newSpeed) {
 }
 
 function setSpeed(newSpeed) {
-  const video = document.querySelector('video');
+  replayConfig.cachedPlaybackRate = video.playbackRate;
   newSpeed = parseFloat(newSpeed);
   video.playbackRate = newSpeed;
 
@@ -530,6 +528,7 @@ document.querySelector('video').addEventListener('play', () => {
 });
 document.querySelector('video').addEventListener('ended', () => {
   if (config.stopped) return;
+  //   setSpeed(replayConfig.cachedPlaybackRate || 3);
   clearTimeout(config.timer);
   config.timer = null;
 
