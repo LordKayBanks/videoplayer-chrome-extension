@@ -519,24 +519,67 @@ function getSpeed() {
   return video.playbackRate;
 }
 
+const testconfig = {
+  alertConfigMidwayTime: null,
+  alertConfigOneThirdTime: null,
+  alertConfigTwoThirdTime: null,
+};
 function alertMidWay() {
-  const alertConfig = setInterval(() => {
-    const alertTime = video.duration * 0.6; //60%
-    const remainTime = video.duration - alertTime; //40%
-    if (video.currentTime > alertTime) {
+  const limit = 10 * 60; //10mins
+  testconfig.alertConfigMidwayTime = setInterval(() => {
+    const midwayTime = video.duration * 0.6; //60%
+    const remainTime = video.duration - midwayTime; //40%
+    if (video.duration < limit) {
+      if (video.currentTime > midwayTime) {
+        notify.display(
+          `Alert:\r\nJust Past Midway!`,
+          4000,
+          `\r\n<${toMinutesandSeconds(remainTime)}>`
+        );
+        clearInterval(testconfig.alertConfigMidwayTime);
+      }
+    }
+  }, 2000);
+  // =================>
+  testconfig.alertConfigOneThirdTime = setInterval(() => {
+    const oneThirdTime = video.duration * 0.33;
+    const twoThirdTime = oneThirdTime * 2;
+    if (
+      video.duration > limit &&
+      video.currentTime > oneThirdTime &&
+      video.currentTime < twoThirdTime
+    ) {
+      let remainTime = video.duration - oneThirdTime; //60%
       notify.display(
-        `Alert:\r\nJust Past Midway!`,
+        `Alert:\r\nJust Past 40%!`,
         4000,
         `\r\n<${toMinutesandSeconds(remainTime)}>`
       );
-      clearInterval(alertConfig);
+      clearInterval(testconfig.alertConfigOneThirdTime);
+    }
+  }, 2000);
+  //   =================>
+  testconfig.alertConfigTwoThirdTime = setInterval(() => {
+    const oneThirdTime = video.duration * 0.4;
+    const twoThirdTime = oneThirdTime * 2;
+    if (video.duration > limit && video.currentTime > twoThirdTime) {
+      let remainTime = video.duration - twoThirdTime; //60%
+      notify.display(
+        `Alert:\r\nJust Past 80%!`,
+        4000,
+        `\r\n<${toMinutesandSeconds(remainTime)}>`
+      );
+      clearInterval(testconfig.alertConfigTwoThirdTime);
     }
   }, 2000);
 }
 
-document
-  .querySelector('video')
-  .addEventListener('loadeddata', alertMidWay);
+document.querySelector('video').addEventListener('loadeddata', () => {
+  clearInterval(testconfig.alertConfigMidwayTime);
+  clearInterval(testconfig.alertConfigOneThirdTime);
+  clearInterval(testconfig.alertConfigTwoThirdTime);
+  alertMidWay();
+});
 
 document.querySelector('video').addEventListener('play', () => {
   if (config.stopped) return;
