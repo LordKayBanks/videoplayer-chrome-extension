@@ -23,7 +23,7 @@ toast.appendChild(colorText);
 document.body.appendChild(toast);
 
 let id;
-notify.display = (msg, period = 4000, colorMsg = '') => {
+notify.display = (msg, period = 5000, colorMsg = '') => {
   colorText.textContent = `\r\n${colorMsg}`;
   blandText.textContent = msg;
   toast.style.opacity = 1;

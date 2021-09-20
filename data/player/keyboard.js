@@ -531,16 +531,17 @@ function alertMidWay() {
   clearInterval(alertConfig.alertConfigTwoThirdTime);
   clearInterval(alertConfig.alertConfigOneThirdTime);
   //   =================
-  const MAX = 10 * 60; //10mins
-  const MIN = 6 * 60; //6mins
-  if (video.duration < MIN) return;
+  const standardLength = 10 * 60; //10mins
+  const minimumLength = 6 * 60; //6mins
+  if (video.duration < minimumLength) return;
 
   alertConfig.alertConfigMidwayTime = setInterval(() => {
-    const midwayTime = video.duration * 0.6; //60%
+    const midwayTime = video.duration * 0.5; //60%
     const remainTime = video.duration - midwayTime; //40%
-    if (video.duration < MAX && video.currentTime > midwayTime) {
+    //  if (video.duration < standardLength && video.currentTime > midwayTime) {
+    if (video.currentTime > midwayTime) {
       notify.display(
-        `Alert:\r\nJust Past Midway!`,
+        `Alert:\r\nJust Past 50%!`,
         4000,
         `\r\n<${toMinutesandSeconds(remainTime)}>`
       );
@@ -548,31 +549,37 @@ function alertMidWay() {
     }
   }, 2000);
   // =================>
-  alertConfig.alertConfigOneThirdTime = setInterval(() => {
-    const oneThirdTime = video.duration * 0.33;
-    const twoThirdTime = oneThirdTime * 2;
-    if (
-      video.duration > MAX &&
-      video.currentTime > oneThirdTime &&
-      video.currentTime < twoThirdTime
-    ) {
-      let remainTime = video.duration - oneThirdTime; //60%
-      notify.display(
-        `Alert:\r\nJust Past 40%!`,
-        4000,
-        `\r\n<${toMinutesandSeconds(remainTime)}>`
-      );
-      clearInterval(alertConfig.alertConfigOneThirdTime);
-    }
-  }, 2000);
+  //   alertConfig.alertConfigOneThirdTime = setInterval(() => {
+  //     const oneThirdTime = video.duration * 0.33;
+  //     const twoThirdTime = oneThirdTime * 2;
+  //     if (
+  //       video.duration > standardLength &&
+  //       video.currentTime > oneThirdTime &&
+  //       video.currentTime < twoThirdTime
+  //     ) {
+  //       let remainTime = video.duration - oneThirdTime; //60%
+  //       notify.display(
+  //         `Alert:\r\nJust Past 40%!`,
+  //         4000,
+  //         `\r\n<${toMinutesandSeconds(remainTime)}>`
+  //       );
+  //       clearInterval(alertConfig.alertConfigOneThirdTime);
+  //     }
+  //   }, 2000);
   //   =================>
   alertConfig.alertConfigTwoThirdTime = setInterval(() => {
-    const oneThirdTime = video.duration * 0.4;
-    const twoThirdTime = oneThirdTime * 2;
-    if (video.duration > MAX && video.currentTime > twoThirdTime) {
-      let remainTime = video.duration - twoThirdTime; //60%
+    //  const oneThirdTime = video.duration * 0.4;
+    //  const twoThirdTime = oneThirdTime * 2;
+    //  if (video.duration > standardLength && video.currentTime > twoThirdTime) {
+    const _75PercentTime = video.duration * 0.75; //75%
+    if (
+      video.duration > standardLength &&
+      video.currentTime > _75PercentTime
+    ) {
+      // let remainTime = video.duration - twoThirdTime;
+      let remainTime = video.duration - _75PercentTime; //25%
       notify.display(
-        `Alert:\r\nJust Past 80%!`,
+        `Alert:\r\nJust Past 75%!`,
         4000,
         `\r\n<${toMinutesandSeconds(remainTime)}>`
       );
