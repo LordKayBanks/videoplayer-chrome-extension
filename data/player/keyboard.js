@@ -75,6 +75,7 @@ const notifyReplayStatus = () =>
       replayConfig.endPosition
     )}`
   );
+
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const rules = [
   {
@@ -518,6 +519,25 @@ function getSpeed() {
   return video.playbackRate;
 }
 
+function alertMidWay() {
+  const alertConfig = setInterval(() => {
+    const alertTime = video.duration * 0.6; //60%
+    const remainTime = video.duration - alertTime; //40%
+    if (video.currentTime > alertTime) {
+      notify.display(
+        `Alert:\r\nJust Past Midway!`,
+        4000,
+        `\r\n<${toMinutesandSeconds(remainTime)}>`
+      );
+      clearInterval(alertConfig);
+    }
+  }, 2000);
+}
+
+document
+  .querySelector('video')
+  .addEventListener('loadeddata', alertMidWay);
+
 document.querySelector('video').addEventListener('play', () => {
   if (config.stopped) return;
   clearTimeout(config.timer);
@@ -526,6 +546,7 @@ document.querySelector('video').addEventListener('play', () => {
     : (config.timer = toggleSpeed(5));
   notify.display(`Toggle Speed Started:`);
 });
+
 document.querySelector('video').addEventListener('ended', () => {
   if (config.stopped) return;
   //   setSpeed(replayConfig.cachedPlaybackRate || 3);
@@ -597,6 +618,7 @@ function toMinutesandSeconds(seconds) {
 
   return [hours, minutes, seconds % 60].map(format).join(':');
 }
+
 function toggleFullScreen() {
   if (
     !document.fullscreenElement && // alternative standard method
