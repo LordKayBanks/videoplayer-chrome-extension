@@ -71,9 +71,11 @@ const notifyReplayStatus = () =>
       !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
     }\r\nStartPosition: ${toMinutesandSeconds(
       replayConfig.startPosition
-    )}\r\nEndPosition:  ${toMinutesandSeconds(
+    )}`,
+    4000,
+    `\r\nEndPosition:  <${toMinutesandSeconds(
       replayConfig.endPosition
-    )}`
+    )}>`
   );
 
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
@@ -519,33 +521,38 @@ function getSpeed() {
   return video.playbackRate;
 }
 
-const testconfig = {
+const alertConfig = {
   alertConfigMidwayTime: null,
   alertConfigOneThirdTime: null,
   alertConfigTwoThirdTime: null,
 };
 function alertMidWay() {
-  const limit = 10 * 60; //10mins
-  testconfig.alertConfigMidwayTime = setInterval(() => {
+  clearInterval(alertConfig.alertConfigMidwayTime);
+  clearInterval(alertConfig.alertConfigTwoThirdTime);
+  clearInterval(alertConfig.alertConfigOneThirdTime);
+  //   =================
+  const MAX = 10 * 60; //10mins
+  const MIN = 6 * 60; //6mins
+  if (video.duration < MIN) return;
+
+  alertConfig.alertConfigMidwayTime = setInterval(() => {
     const midwayTime = video.duration * 0.6; //60%
     const remainTime = video.duration - midwayTime; //40%
-    if (video.duration < limit) {
-      if (video.currentTime > midwayTime) {
-        notify.display(
-          `Alert:\r\nJust Past Midway!`,
-          4000,
-          `\r\n<${toMinutesandSeconds(remainTime)}>`
-        );
-        clearInterval(testconfig.alertConfigMidwayTime);
-      }
+    if (video.duration < MAX && video.currentTime > midwayTime) {
+      notify.display(
+        `Alert:\r\nJust Past Midway!`,
+        4000,
+        `\r\n<${toMinutesandSeconds(remainTime)}>`
+      );
+      clearInterval(alertConfig.alertConfigMidwayTime);
     }
   }, 2000);
   // =================>
-  testconfig.alertConfigOneThirdTime = setInterval(() => {
+  alertConfig.alertConfigOneThirdTime = setInterval(() => {
     const oneThirdTime = video.duration * 0.33;
     const twoThirdTime = oneThirdTime * 2;
     if (
-      video.duration > limit &&
+      video.duration > MAX &&
       video.currentTime > oneThirdTime &&
       video.currentTime < twoThirdTime
     ) {
@@ -555,33 +562,29 @@ function alertMidWay() {
         4000,
         `\r\n<${toMinutesandSeconds(remainTime)}>`
       );
-      clearInterval(testconfig.alertConfigOneThirdTime);
+      clearInterval(alertConfig.alertConfigOneThirdTime);
     }
   }, 2000);
   //   =================>
-  testconfig.alertConfigTwoThirdTime = setInterval(() => {
+  alertConfig.alertConfigTwoThirdTime = setInterval(() => {
     const oneThirdTime = video.duration * 0.4;
     const twoThirdTime = oneThirdTime * 2;
-    if (video.duration > limit && video.currentTime > twoThirdTime) {
+    if (video.duration > MAX && video.currentTime > twoThirdTime) {
       let remainTime = video.duration - twoThirdTime; //60%
       notify.display(
         `Alert:\r\nJust Past 80%!`,
         4000,
         `\r\n<${toMinutesandSeconds(remainTime)}>`
       );
-      clearInterval(testconfig.alertConfigTwoThirdTime);
+      clearInterval(alertConfig.alertConfigTwoThirdTime);
     }
   }, 2000);
 }
 
-document.querySelector('video').addEventListener('loadeddata', () => {
-  clearInterval(testconfig.alertConfigMidwayTime);
-  clearInterval(testconfig.alertConfigOneThirdTime);
-  clearInterval(testconfig.alertConfigTwoThirdTime);
-  alertMidWay();
-});
+video.addEventListener('seeked', alertMidWay);
+video.addEventListener('loadeddata', alertMidWay);
 
-document.querySelector('video').addEventListener('play', () => {
+video.addEventListener('play', () => {
   if (config.stopped) return;
   clearTimeout(config.timer);
   config.isFast
@@ -590,7 +593,7 @@ document.querySelector('video').addEventListener('play', () => {
   notify.display(`Toggle Speed Started:`);
 });
 
-document.querySelector('video').addEventListener('ended', () => {
+video.addEventListener('ended', () => {
   if (config.stopped) return;
   //   setSpeed(replayConfig.cachedPlaybackRate || 3);
   clearTimeout(config.timer);
