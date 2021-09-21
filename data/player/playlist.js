@@ -247,7 +247,16 @@ repeat.addEventListener('click', (e) => {
 });
 
 speed.addEventListener('click', (e) => {
-  const modes = ['2X', '3X', '3.5X', '4X', '4.5X', '5X'];
+  const modes = [
+    '2X',
+    '3X',
+    '3.5X',
+    '4X',
+    '4.25X',
+    '4.5X',
+    '4.75X',
+    '5X',
+  ];
   const index =
     (modes.indexOf(e.target.dataset.mode) + 1) % modes.length;
   speed.dataset.mode = modes[index];

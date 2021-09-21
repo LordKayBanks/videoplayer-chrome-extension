@@ -543,7 +543,7 @@ function alertMidWay() {
       notify.display(
         `Alert:\r\nJust Past 50%!`,
         4000,
-        `\r\n<${toMinutesandSeconds(remainTime)}>`
+        `\r\n<${toMinutesandSeconds(remainTime, false)}>`
       );
       clearInterval(alertConfig.alertConfigMidwayTime);
     }
@@ -581,7 +581,7 @@ function alertMidWay() {
       notify.display(
         `Alert:\r\nJust Past 75%!`,
         4000,
-        `\r\n<${toMinutesandSeconds(remainTime)}>`
+        `\r\n<${toMinutesandSeconds(remainTime, false)}>`
       );
       clearInterval(alertConfig.alertConfigTwoThirdTime);
     }
@@ -664,12 +664,16 @@ function handleMultipleKeyPress(evt) {
 window.addEventListener('keyup', handleMultipleKeyPress);
 window.addEventListener('keydown', handleMultipleKeyPress);
 
-function toMinutesandSeconds(seconds) {
+function toMinutesandSeconds(seconds, getFullFormat = true) {
   const format = (val) => `0${Math.floor(val)}`.slice(-2);
   const hours = seconds / 3600;
   const minutes = (seconds % 3600) / 60;
 
-  return [hours, minutes, seconds % 60].map(format).join(':');
+  const fullFormat = [hours, minutes, seconds % 60]
+    .map(format)
+    .join(':');
+  const hourMinuteOnlyFormat = [hours, minutes].map(format).join(':');
+  return getFullFormat ? fullFormat : hourMinuteOnlyFormat;
 }
 
 function toggleFullScreen() {
