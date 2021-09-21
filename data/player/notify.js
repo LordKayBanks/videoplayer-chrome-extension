@@ -16,21 +16,28 @@ toast.style = `
   padding:15px;
   background-color: black;
   color:white;
-  opacity: 0;
+  visibility: hidden;
+  border-radius: 10px;
+  border: 2px solid red;
+  border-bottom: 2px solid lime;
+  border-left: 2px solid lime;
+  animation: blinking 5s infinite;
+  animation-timing-function: linear;
+}
 `;
 toast.appendChild(blandText);
 toast.appendChild(colorText);
 document.body.appendChild(toast);
 
 let id;
-notify.display = (msg, period = 5000, colorMsg = '') => {
+notify.display = (msg, colorMsg = '', period = 30000) => {
   colorText.textContent = `\r\n${colorMsg}`;
   blandText.textContent = msg;
-  toast.style.opacity = 1;
+  toast.style.visibility = 'visible';
   clearTimeout(id);
   //   id = setTimeout(() => (toast.textContent = ''), period);
   id = setTimeout(() => {
-    toast.style.opacity = 0;
+    toast.style.visibility = 'hidden';
     colorText.textContent = '';
     blandText.textContent = '';
   }, period);
