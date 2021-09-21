@@ -8,8 +8,7 @@
 }
 body {
   font-size: 13px;
-  font-family: Arial, 'Helvetica Neue', Helvetica,
-    sans-serif;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   display: grid;
   grid-template-columns: 1fr min-content;
   margin: 0;
@@ -88,6 +87,9 @@ body[data-mode='expand'] #buttons {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0;
+  font-size: 9px;
+  font-weight: bold;
+  color: brown;
 }
 #playlist li {
   white-space: nowrap;
@@ -97,7 +99,8 @@ body[data-mode='expand'] #buttons {
   cursor: pointer;
 }
 #playlist li.active {
-  background-color: var(--hover-color);
+  /* background-color: var(--hover-color); */
+  background-color: #b0ff12;
 }
 #playlist li span[data-id='name'] {
   overflow: hidden;
