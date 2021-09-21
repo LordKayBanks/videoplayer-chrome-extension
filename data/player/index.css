@@ -168,3 +168,32 @@ input[type='checkbox']:checked + label > svg {
 #boost[data-mode='4b'] text:not(:nth-child(3)) {
   display: none;
 }
+
+@keyframes blinking {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* @keyframes blinking {
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  60% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.4;
+  }
+} */

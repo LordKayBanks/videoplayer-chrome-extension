@@ -72,7 +72,6 @@ const notifyReplayStatus = () =>
     }\r\nStartPosition: ${toMinutesandSeconds(
       replayConfig.startPosition
     )}`,
-    4000,
     `\r\nEndPosition:  <${toMinutesandSeconds(
       replayConfig.endPosition
     )}>`
@@ -542,7 +541,6 @@ function alertMidWay() {
     if (video.currentTime > midwayTime) {
       notify.display(
         `Alert:\r\nJust Past 50%!`,
-        4000,
         `\r\n<${toMinutesandSeconds(remainTime, false)}>`
       );
       clearInterval(alertConfig.alertConfigMidwayTime);
@@ -560,8 +558,7 @@ function alertMidWay() {
   //       let remainTime = video.duration - oneThirdTime; //60%
   //       notify.display(
   //         `Alert:\r\nJust Past 40%!`,
-  //         4000,
-  //         `\r\n<${toMinutesandSeconds(remainTime)}>`
+  //         `\r\n<${toMinutesandSeconds(remainTime)}>`,
   //       );
   //       clearInterval(alertConfig.alertConfigOneThirdTime);
   //     }
@@ -580,7 +577,6 @@ function alertMidWay() {
       let remainTime = video.duration - _80PercentTime; //25%
       notify.display(
         `Alert:\r\nJust Past 80%!`,
-        4000,
         `\r\n<${toMinutesandSeconds(remainTime, false)}>`
       );
       clearInterval(alertConfig.alertConfigTwoThirdTime);
