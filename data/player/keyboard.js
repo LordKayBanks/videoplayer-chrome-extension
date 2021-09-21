@@ -571,15 +571,15 @@ function alertMidWay() {
     //  const oneThirdTime = video.duration * 0.4;
     //  const twoThirdTime = oneThirdTime * 2;
     //  if (video.duration > standardLength && video.currentTime > twoThirdTime) {
-    const _75PercentTime = video.duration * 0.75; //75%
+    const _80PercentTime = video.duration * 0.8; //80%
     if (
       video.duration > standardLength &&
-      video.currentTime > _75PercentTime
+      video.currentTime > _80PercentTime
     ) {
       // let remainTime = video.duration - twoThirdTime;
-      let remainTime = video.duration - _75PercentTime; //25%
+      let remainTime = video.duration - _80PercentTime; //25%
       notify.display(
-        `Alert:\r\nJust Past 75%!`,
+        `Alert:\r\nJust Past 80%!`,
         4000,
         `\r\n<${toMinutesandSeconds(remainTime, false)}>`
       );
