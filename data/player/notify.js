@@ -13,7 +13,7 @@ toast.style = `
   left: 10px;
   white-space: pre;
   font-size:18px;
-  padding:15px;
+  padding:10px;
   background-color: black;
   color:white;
   visibility: hidden;
