@@ -49,7 +49,7 @@ function increaseSpeed(value = 0.25) {
 
 const shiftKeyDoublePressConfig = {
   lastKeypressTime: null,
-  delta: 250,
+  delta: 200,
 };
 
 const keyboard = {};
@@ -203,12 +203,12 @@ const rules = [
       event.preventDefault();
       video.volume = 1;
 
-      if (video.playbackRate > 3.5) {
-        setSpeed(3.5);
-        updateSpeedIcon(3.5);
+      if (video.playbackRate > 2) {
+        setSpeed(2);
+        updateSpeedIcon(2);
       } else {
-        setSpeed(15);
-        updateSpeedIcon(15);
+        setSpeed(4);
+        updateSpeedIcon(4);
       }
       return true;
     },
@@ -361,14 +361,11 @@ const rules = [
           shiftKeyDoublePressConfig.lastKeypressTime <=
         shiftKeyDoublePressConfig.delta
       ) {
-        setSpeed(4);
-        updateSpeedIcon(4);
-
-        // optional - if we'd rather not detect a triple-press
-        // as a second double-press, reset the timestamp
+        setSpeed(15);
+        updateSpeedIcon(15);
         thisKeypressTime = 0;
       } else {
-        if (video.playbackRate < 3) {
+        if (video.playbackRate != 3) {
           setSpeed(3);
           updateSpeedIcon(3);
         } else {
