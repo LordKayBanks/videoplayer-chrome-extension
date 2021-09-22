@@ -540,8 +540,8 @@ function alertMidWay() {
     //  if (video.duration < standardLength && video.currentTime > midwayTime) {
     if (video.currentTime > midwayTime) {
       notify.display(
-        `Alert:\r\nJust Past 50%!`,
-        `\r\n<${toMinutesandSeconds(remainTime, false)}>`
+        `Alert:\r\nJust Past 50%`,
+        `\r\n\r\n[${toMinutesandSeconds(remainTime, false)}]`
       );
       clearInterval(alertConfig.alertConfigMidwayTime);
     }
@@ -576,8 +576,8 @@ function alertMidWay() {
       // let remainTime = video.duration - twoThirdTime;
       let remainTime = video.duration - _80PercentTime; //25%
       notify.display(
-        `Alert:\r\nJust Past 80%!`,
-        `\r\n<${toMinutesandSeconds(remainTime, false)}>`
+        `Alert:\r\nJust Past 80%`,
+        `\r\n\r\n[${toMinutesandSeconds(remainTime, false)}]`
       );
       clearInterval(alertConfig.alertConfigTwoThirdTime);
     }
@@ -585,7 +585,14 @@ function alertMidWay() {
 }
 
 video.addEventListener('seeked', alertMidWay);
-video.addEventListener('loadeddata', alertMidWay);
+video.addEventListener('loadeddata', () => {
+  alertMidWay();
+  const videoTitle = `${video.origin.name}  `;
+  notify.display(
+    videoTitle,
+    `[${toMinutesandSeconds(video.duration)}]`
+  );
+});
 
 video.addEventListener('play', () => {
   if (config.stopped) return;

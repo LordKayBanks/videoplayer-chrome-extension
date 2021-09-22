@@ -207,7 +207,6 @@ video.addEventListener('loadedmetadata', () => {
   const h = Math.floor(d / 3600);
   const m = Math.floor((d % 3600) / 60);
   const s = Math.floor((d % 3600) % 60);
-
   video.origin.e.querySelector('span[data-id=duration]').textContent =
     ('0' + h).substr(-2) +
     ':' +
