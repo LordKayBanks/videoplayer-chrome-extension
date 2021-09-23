@@ -21,9 +21,7 @@ const drop = async (es) => {
     .filter((a) => a);
 
   const checkEntry = async (entry) => {
-    const file = await new Promise((resolve) =>
-      entry.file(resolve)
-    );
+    const file = await new Promise((resolve) => entry.file(resolve));
     if (file.type) {
       if (
         file.type.startsWith('audio/') ||
@@ -62,9 +60,7 @@ const drop = async (es) => {
     }
   }
 
-  files = files.sort(
-    (a, b) => parseInt(a.name) - parseInt(b.name)
-  );
+  files = files.sort((a, b) => parseInt(a.name) - parseInt(b.name));
   //   files = files.sort((a, b) =>
   //     b.name.localeCompare(a.name)
   //   );
@@ -75,16 +71,12 @@ const drop = async (es) => {
   }
 };
 
-document.addEventListener('dragover', (e) =>
-  e.preventDefault()
-);
+document.addEventListener('dragover', (e) => e.preventDefault());
 document.addEventListener('drop', (e) => {
   e.preventDefault();
   drop([...e.dataTransfer.items]);
 });
-const container = document.getElementById(
-  'video-container'
-);
+const container = document.getElementById('video-container');
 container.addEventListener('dblclick', (e) => {
   if (e.target === container) {
     const input = document.createElement('input');

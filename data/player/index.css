@@ -87,9 +87,9 @@ body[data-mode='expand'] #buttons {
   overflow-x: hidden;
   overflow-y: auto;
   padding: 0;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: bold;
-  color: brown;
+  color: crimson;
 }
 #playlist li {
   white-space: nowrap;
@@ -100,7 +100,7 @@ body[data-mode='expand'] #buttons {
 }
 #playlist li.active {
   /* background-color: var(--hover-color); */
-  background-color: #b0ff12;
+  background-color: white;
 }
 #playlist li span[data-id='name'] {
   overflow: hidden;
