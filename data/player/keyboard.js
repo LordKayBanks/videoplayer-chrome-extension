@@ -144,11 +144,11 @@ const rules = [
     },
     action(e) {
       if (e.code === 'Backslash') {
-        replayCut(65);
+        replayCut(parseInt(video.duration));
       } else if (e.code === 'Quote') {
-        replayCut(35);
+        replayCut(65);
       } else if (e.code === 'Semicolon') {
-        replayCut(20);
+        replayCut(35);
       } else if (e.code === 'Enter') {
         notifyReplayStatus();
       }
@@ -352,6 +352,15 @@ const rules = [
   },
   {
     condition(meta, code) {
+      return code === 'Space';
+    },
+    action(e) {
+      setSpeed(15);
+      updateSpeedIcon(15);
+    },
+  },
+  {
+    condition(meta, code) {
       return code === 'ShiftRight';
     },
     action() {
@@ -418,6 +427,30 @@ const rules = [
       return true;
     },
   },
+  {
+    condition(meta, code) {
+      return code === 'KeyS';
+    },
+    action() {
+      let message;
+      if (alertConfig.speedMode == 1) {
+        message = 'Speedmode: Fastmode Activated';
+        alertConfig.speedMode = 2;
+        alertMidWay();
+      } else if (alertConfig.speedMode == 2) {
+        message = 'Speedmode: OFF!';
+        alertConfig.speedMode = 0;
+        alertMidWay();
+      } else if (alertConfig.speedMode == 0) {
+        message = 'Speedmode: Slowmode Activated';
+        alertConfig.speedMode = 1;
+        alertMidWay();
+      }
+
+      notify.display(message);
+      return true;
+    },
+  },
 ];
 
 function replayCut(offSet) {
@@ -439,7 +472,6 @@ function replayCut(offSet) {
       video.duration
     );
 
-    //  replayConfig.cachedPlaybackRate = video.playbackRate;
     setSpeed(2);
     video.currentTime = replayConfig.startPosition;
     replayConfig.unsubscribe = setInterval(() => {
@@ -455,28 +487,6 @@ function replayCut(offSet) {
     notifyReplayStatus();
   }
 }
-// function replayCut() {
-//   if (replayConfig.startPosition == 0) {
-//     replayConfig.startPosition = video.currentTime;
-//     notify.display('Replay: First Position Set');
-//   } else {
-//     if (replayConfig.unsubscribe) {
-//       clearInterval(replayConfig.unsubscribe);
-//       replayConfig.unsubscribe = null;
-//       replayConfig.startPosition = 0;
-//       notify.display('Replay: Stopped!');
-//     } else {
-//       replayConfig.endPosition = video.currentTime;
-//       video.currentTime = replayConfig.startPosition;
-//       replayConfig.unsubscribe = setInterval(() => {
-//         if (video.currentTime >= replayConfig.endPosition) {
-//           video.currentTime = replayConfig.startPosition;
-//         }
-//       }, 2000);
-//       notify.display('Replay: Started!');
-//     }
-//   }
-// }
 
 function toggleSpeed(intervalInSeconds = 10, isFAST = false) {
   let index = 0;
@@ -504,13 +514,13 @@ export function updateSpeedIcon(newSpeed) {
   newSpeed >= 6 ? (video.muted = true) : (video.muted = false);
 }
 
-function setSpeed(newSpeed) {
+function setSpeed(newSpeed, showNotification = true) {
   replayConfig.cachedPlaybackRate = video.playbackRate;
   newSpeed = parseFloat(newSpeed);
   video.playbackRate = newSpeed;
 
   updateSpeedIcon(newSpeed);
-  notify.display(`Speed: ${newSpeed}`);
+  showNotification && notify.display(`Speed: ${newSpeed}`);
 }
 function getSpeed() {
   const video = document.querySelector('video');
@@ -521,19 +531,44 @@ const alertConfig = {
   alertConfigMidwayTime: null,
   alertConfigOneThirdTime: null,
   alertConfigTwoThirdTime: null,
+  speedMode: 1,
 };
 function alertMidWay() {
   clearInterval(alertConfig.alertConfigMidwayTime);
   clearInterval(alertConfig.alertConfigTwoThirdTime);
   clearInterval(alertConfig.alertConfigOneThirdTime);
+  alertConfig.speedMode == 1 && setSpeed(2.5, false);
+  alertConfig.speedMode == 2 && setSpeed(2.5, false);
+
   //   =================
   const standardLength = 10 * 60; //10mins
   const minimumLength = 6 * 60; //6mins
   if (video.duration < minimumLength) return;
+  //   =================>
+  alertConfig.alertConfigOneThirdTime = setInterval(() => {
+    const _25PercentTime = video.duration * 0.25; //80%
+    if (
+      video.duration > standardLength &&
+      video.currentTime > _25PercentTime &&
+      video.currentTime < _25PercentTime * 2
+    ) {
+      alertConfig.speedMode == 1 && setSpeed(3, false);
+      alertConfig.speedMode == 2 && setSpeed(3, false);
+      const remainTime = video.duration - _25PercentTime; //25%
+      notify.display(
+        `Alert:\r\nJust Past 25%`,
+        `\r\n\r\n[${toMinutesandSeconds(remainTime, false)}]`
+      );
+      clearInterval(alertConfig.alertConfigOneThirdTime);
+    }
+  }, 2000);
+  //   =================>
 
   alertConfig.alertConfigMidwayTime = setInterval(() => {
     const midwayTime = video.duration * 0.5; //60%
     if (video.currentTime > midwayTime) {
+      alertConfig.speedMode == 1 && setSpeed(3, false);
+      alertConfig.speedMode == 2 && setSpeed(3.5, false);
       const remainTime = video.duration - midwayTime; //40%
       notify.display(
         `Alert:\r\nJust Past 50%`,
@@ -543,22 +578,6 @@ function alertMidWay() {
     }
   }, 2000);
 
-  //   =================>
-  alertConfig.alertConfigOneThirdTime = setInterval(() => {
-    const _25PercentTime = video.duration * 0.25; //80%
-    if (
-      video.duration > standardLength &&
-      video.currentTime > _25PercentTime &&
-      video.currentTime < _25PercentTime * 2
-    ) {
-      const remainTime = video.duration - _25PercentTime; //25%
-      notify.display(
-        `Alert:\r\nJust Past 25%`,
-        `\r\n\r\n[${toMinutesandSeconds(remainTime, false)}]`
-      );
-      clearInterval(alertConfig.alertConfigOneThirdTime);
-    }
-  }, 2000);
   //   =====================>
   alertConfig.alertConfigTwoThirdTime = setInterval(() => {
     const _75PercentTime = video.duration * 0.75; //80%
@@ -566,6 +585,8 @@ function alertMidWay() {
       video.duration > standardLength &&
       video.currentTime > _75PercentTime
     ) {
+      alertConfig.speedMode == 1 && setSpeed(3.5, false);
+      alertConfig.speedMode == 2 && setSpeed(4, false);
       const remainTime = video.duration - _75PercentTime; //25%
       notify.display(
         `Alert:\r\nJust Past 75%`,
@@ -596,6 +617,10 @@ video.addEventListener('play', () => {
 });
 
 video.addEventListener('ended', () => {
+  if (replayConfig.unsubscribe) {
+    video.currentTime = replayConfig.startPosition;
+    notifyReplayStatus();
+  }
   if (config.stopped) return;
   //   setSpeed(replayConfig.cachedPlaybackRate || 3);
   clearTimeout(config.timer);
