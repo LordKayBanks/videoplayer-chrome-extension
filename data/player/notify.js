@@ -30,7 +30,7 @@ toast.appendChild(colorText);
 document.body.appendChild(toast);
 
 let id;
-notify.display = (msg, colorMsg = '', period = 20000) => {
+notify.display = (msg, colorMsg = '', period = 15000) => {
   //   colorText.textContent = `\r\n${colorMsg}`;
   colorText.textContent = colorMsg;
   blandText.textContent = msg;
