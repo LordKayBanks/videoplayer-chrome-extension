@@ -1,24 +1,19 @@
 import notify from './notify.js';
 
-//   let rangeFast = [
-//     2, 2.5, 3, 3.2, 3.4, 3.4, 3.5, 3.5, 3.6, 3.6, 3.7, 3.7,
-//     3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4, 4, 4,
-//   ]
-//     .sort((a, b) => (a < b ? 1 : -1))
-//     .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
-const rangeFast = [
-  3.5, 3.5, 3.6, 3.6, 3.7, 3.7, 3.7, 3.8, 3.8, 3.8, 3.9, 3.9, 3.9, 4,
-  4, 4,
-]
-  .sort((a, b) => (a < b ? 1 : -1))
-  .concat([2.5, 3, 3.2, 3.4, 3.6, 3.8]);
-
+// const rangeBasic = [2.5, 3.25, 2.5, 3.25, 3, 3.5, 3, 3.5]; /*3.0*/
 const rangeBasic = [
-  2, 2.5, 3, 3.2, 3.2, 3.3, 3.3, 3.3, 3.4, 3.4, 3.4, 3.4, 3.4, 3.5,
-  3.5, 3.5, 3.5, 3.5,
-]
-  .sort((a, b) => (a < b ? 1 : -1))
-  .concat([2.5, 3, 3.2, 3.4]);
+  2.5,
+
+  3, 3.5, 3, 3.5, 3, 3.5,
+]; /*3.0*/
+// const rangeFast = [
+//   2.5, 3, 3.25, 3.75, 3.25, 3.75, 3.5, 4, 3.5, 4, 3.5, 4,
+// ]; /*3.5*/
+const rangeFast = [
+  2.5,
+
+  3.5, 4, 3.5, 4, 3.5, 4,
+];
 
 const seekToTime = function (value) {
   const video = document.querySelector('video');
@@ -352,11 +347,14 @@ const rules = [
   },
   {
     condition(meta, code) {
-      return code === 'Space';
+      return code === 'MetaRight';
+      // return code === 'Space';
     },
     action(e) {
+      e.preventDefault();
       setSpeed(15);
       updateSpeedIcon(15);
+      return false;
     },
   },
   {
@@ -489,12 +487,16 @@ function replayCut(offSet) {
 }
 
 function toggleSpeed(intervalInSeconds = 10, isFAST = false) {
+  alertConfig.speedMode = 0;
+  alertMidWay();
+  //   ==============>
+
   let index = 0;
   const timer = setInterval(() => {
     if (isFAST) {
-      setSpeed(rangeFast[++index % rangeFast.length]);
+      setSpeed(rangeFast[++index % rangeFast.length], false);
     } else {
-      setSpeed(rangeBasic[++index % rangeBasic.length]);
+      setSpeed(rangeBasic[++index % rangeBasic.length], false);
     }
   }, intervalInSeconds * 1000);
   return timer;
@@ -534,26 +536,29 @@ const alertConfig = {
   speedMode: 1,
 };
 function alertMidWay() {
+  clearTimeout(config.timer);
+
   clearInterval(alertConfig.alertConfigMidwayTime);
   clearInterval(alertConfig.alertConfigTwoThirdTime);
   clearInterval(alertConfig.alertConfigOneThirdTime);
+
   alertConfig.speedMode == 1 && setSpeed(2.5, false);
   alertConfig.speedMode == 2 && setSpeed(2.5, false);
-
   //   =================
+
   const standardLength = 10 * 60; //10mins
-  const minimumLength = 6 * 60; //6mins
-  if (video.duration < minimumLength) return;
+  //   const minimumLength = 6 * 60; //6mins
+  //   if (video.duration < minimumLength) return;
   //   =================>
   alertConfig.alertConfigOneThirdTime = setInterval(() => {
     const _25PercentTime = video.duration * 0.25; //80%
     if (
-      video.duration > standardLength &&
+      // video.duration > standardLength &&
       video.currentTime > _25PercentTime &&
       video.currentTime < _25PercentTime * 2
     ) {
-      alertConfig.speedMode == 1 && setSpeed(3, false);
-      alertConfig.speedMode == 2 && setSpeed(3, false);
+      alertConfig.speedMode === 1 && setSpeed(3, false);
+      alertConfig.speedMode === 2 && setSpeed(3.5, false);
       const remainTime = video.duration - _25PercentTime; //25%
       notify.display(
         `Alert:\r\nJust Past 25%`,
@@ -568,7 +573,7 @@ function alertMidWay() {
     const midwayTime = video.duration * 0.5; //60%
     if (video.currentTime > midwayTime) {
       alertConfig.speedMode == 1 && setSpeed(3, false);
-      alertConfig.speedMode == 2 && setSpeed(3.5, false);
+      alertConfig.speedMode == 2 && setSpeed(4, false);
       const remainTime = video.duration - midwayTime; //40%
       notify.display(
         `Alert:\r\nJust Past 50%`,
@@ -582,11 +587,11 @@ function alertMidWay() {
   alertConfig.alertConfigTwoThirdTime = setInterval(() => {
     const _75PercentTime = video.duration * 0.75; //80%
     if (
-      video.duration > standardLength &&
+      // video.duration > standardLength &&
       video.currentTime > _75PercentTime
     ) {
       alertConfig.speedMode == 1 && setSpeed(3.5, false);
-      alertConfig.speedMode == 2 && setSpeed(4, false);
+      alertConfig.speedMode == 2 && setSpeed(4.5, false);
       const remainTime = video.duration - _75PercentTime; //25%
       notify.display(
         `Alert:\r\nJust Past 75%`,
