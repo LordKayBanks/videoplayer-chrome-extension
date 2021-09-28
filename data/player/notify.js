@@ -21,8 +21,8 @@ toast.style = `
   border: 2px solid red;
   border-bottom: 2px solid lime;
   border-left: 2px solid lime;
-  animation: blinking 5s infinite;
-  animation-timing-function: linear;
+  animation: blinking 3s infinite;
+  animation-timing-function: cubic-bezier(0.230, 1.000, 0.320, 1.000);
 }
 `;
 toast.appendChild(blandText);
@@ -30,7 +30,7 @@ toast.appendChild(colorText);
 document.body.appendChild(toast);
 
 let id;
-notify.display = (msg, colorMsg = '', period = 15000) => {
+notify.display = (msg, colorMsg = '', period = 10000) => {
   clearTimeout(id);
   colorText.textContent = colorMsg;
   blandText.textContent = msg;

@@ -294,7 +294,16 @@ const rules = [
   {
     condition(meta, code) {
       return code === 'MetaRight';
-      // return code === 'Space';
+    },
+    action(e) {
+      video.controls = !video.controls;
+      message = ['Speedmode: OFF!', `Controls: ${video.controls}`];
+      return false;
+    },
+  },
+  {
+    condition(meta, code) {
+      return code === 'AltRight';
     },
     action(e) {
       e.preventDefault();
@@ -372,29 +381,29 @@ const rules = [
   },
   {
     condition(meta, code) {
-      //   return code === 'KeyS';
       return code === 'Space';
     },
     action(e) {
       e.preventDefault();
       let thisKeypressTime = new Date();
-      if (thisKeypressTime - alertConfig.lastKeypressTime >= alertConfig.delta) {
+      const timeSinceSpaceKeyPressed = thisKeypressTime - alertConfig.lastKeypressTime;
+      if (timeSinceSpaceKeyPressed >= alertConfig.delta) {
         //   check for single-press of Spacebar
         playPause();
       } else {
         //   check for single-press of Spacebar
         let message;
-        if (alertConfig.speedMode == 1) {
+        if (alertConfig.speedMode == 0) {
+          message = 'Speedmode: Slowmode Activated';
+          alertConfig.speedMode = 1;
+          alertMidWay();
+        } else if (alertConfig.speedMode == 1) {
           message = 'Speedmode: Fastmode Activated';
           alertConfig.speedMode = 2;
           alertMidWay();
         } else if (alertConfig.speedMode == 2) {
           message = 'Speedmode: OFF!';
           alertConfig.speedMode = 0;
-          alertMidWay();
-        } else if (alertConfig.speedMode == 0) {
-          message = 'Speedmode: Slowmode Activated';
-          alertConfig.speedMode = 1;
           alertMidWay();
         }
         notify.display(message);
