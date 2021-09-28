@@ -31,12 +31,10 @@ document.body.appendChild(toast);
 
 let id;
 notify.display = (msg, colorMsg = '', period = 15000) => {
-  //   colorText.textContent = `\r\n${colorMsg}`;
+  clearTimeout(id);
   colorText.textContent = colorMsg;
   blandText.textContent = msg;
   toast.style.visibility = 'visible';
-  clearTimeout(id);
-  //   id = setTimeout(() => (toast.textContent = ''), period);
   id = setTimeout(() => {
     toast.style.visibility = 'hidden';
     colorText.textContent = '';
