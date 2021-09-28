@@ -17,8 +17,6 @@ const rangeFast = [
 
 const seekToTime = function (value) {
   const video = document.querySelector('video');
-  //   video.controls = false;
-  //   setTimeout(() => (video.controls = true), 1000);
   let seekToTime = video.currentTime + value;
 
   if (seekToTime < 0) {
@@ -26,6 +24,11 @@ const seekToTime = function (value) {
   } else if (seekToTime > video.duration) video.duration;
 
   video.currentTime = seekToTime;
+  notify.display(
+    `Current Position: <${toMinutesandSeconds(video.currentTime)}> of <${toMinutesandSeconds(
+      video.duration
+    )}>`
+  );
 };
 function reduceSpeed(value = 0.25) {
   const MIN_SPEED = 0.5;
@@ -60,7 +63,7 @@ const alertConfig = {
   alertConfigMidwayTime: null,
   alertConfigOneThirdTime: null,
   alertConfigTwoThirdTime: null,
-  speedMode: 1,
+  speedMode: 0,
   lastKeypressTime: null,
   delta: 500,
 };
