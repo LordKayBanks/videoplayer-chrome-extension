@@ -15,41 +15,11 @@ const rangeFast = [
   3.5, 4, 3.5, 4, 3.5, 4,
 ];
 
-const seekToTime = function (value) {
-  const video = document.querySelector('video');
-  let seekToTime = video.currentTime + value;
-
-  if (seekToTime < 0) {
-    video.currentTime = 0;
-  } else if (seekToTime > video.duration) video.duration;
-
-  video.currentTime = seekToTime;
-  notify.display(
-    `Current Position: <${toMinutesandSeconds(video.currentTime)}> of <${toMinutesandSeconds(
-      video.duration
-    )}>`
-  );
-};
-function reduceSpeed(value = 0.25) {
-  const MIN_SPEED = 0.5;
-  let newSpeed = getSpeed() - value;
-  newSpeed = newSpeed < MIN_SPEED ? MIN_SPEED : newSpeed;
-  setSpeed(newSpeed);
-  updateSpeedIcon(newSpeed);
-}
-function increaseSpeed(value = 0.25) {
-  const MAX_SPEED = 15;
-  let newSpeed = getSpeed() + value;
-  newSpeed = newSpeed > MAX_SPEED ? MAX_SPEED : newSpeed;
-  setSpeed(newSpeed);
-  updateSpeedIcon(newSpeed);
-}
-
-const keyboard = {};
 const v = document.querySelector('video');
+const video = document.querySelector('video');
+const keyboard = {};
 const config = { timer: null, stopped: true };
 
-const video = document.querySelector('video');
 const replayConfig = {
   startPosition: 0,
   endPosition: 120,
@@ -63,7 +33,7 @@ const alertConfig = {
   alertConfigMidwayTime: null,
   alertConfigOneThirdTime: null,
   alertConfigTwoThirdTime: null,
-  speedMode: 0,
+  speedMode: 1,
   lastKeypressTime: null,
   delta: 500,
 };
@@ -73,15 +43,6 @@ const shiftKeyDoublePressConfig = {
   delta: 200,
 };
 
-const notifyReplayStatus = () =>
-  notify.display(
-    `Replay: is ${
-      !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
-    }\r\nStartPosition: ${toMinutesandSeconds(replayConfig.startPosition)}`,
-    `\r\nEndPosition:  <${toMinutesandSeconds(replayConfig.endPosition)}>`
-  );
-
-const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const rules = [
   {
     condition(meta, code, shift) {
@@ -443,6 +404,46 @@ const rules = [
     },
   },
 ];
+
+const convertToNearest30 = (num) => Math.round(num / 30) * 30;
+
+const seekToTime = function (value) {
+  const video = document.querySelector('video');
+  let seekToTime = video.currentTime + value;
+
+  if (seekToTime < 0) {
+    video.currentTime = 0;
+  } else if (seekToTime > video.duration) video.duration;
+
+  video.currentTime = seekToTime;
+  notify.display(
+    `Current Position: <${toMinutesandSeconds(video.currentTime)}> of <${toMinutesandSeconds(
+      video.duration
+    )}>`
+  );
+};
+function reduceSpeed(value = 0.25) {
+  const MIN_SPEED = 0.5;
+  let newSpeed = getSpeed() - value;
+  newSpeed = newSpeed < MIN_SPEED ? MIN_SPEED : newSpeed;
+  setSpeed(newSpeed);
+  updateSpeedIcon(newSpeed);
+}
+function increaseSpeed(value = 0.25) {
+  const MAX_SPEED = 15;
+  let newSpeed = getSpeed() + value;
+  newSpeed = newSpeed > MAX_SPEED ? MAX_SPEED : newSpeed;
+  setSpeed(newSpeed);
+  updateSpeedIcon(newSpeed);
+}
+
+const notifyReplayStatus = () =>
+  notify.display(
+    `Replay: is ${
+      !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
+    }\r\nStartPosition: ${toMinutesandSeconds(replayConfig.startPosition)}`,
+    `\r\nEndPosition:  <${toMinutesandSeconds(replayConfig.endPosition)}>`
+  );
 
 function playPause() {
   if (video.paused) {
