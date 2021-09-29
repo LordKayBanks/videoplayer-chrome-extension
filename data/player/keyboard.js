@@ -98,16 +98,16 @@ const rules = [
     action(e) {
       if (e.code === 'Semicolon') {
         replayConfig.interval = parseInt(video.duration / 4);
-        replayConfig.interval = convertToNearest30(replayConfig.interval);
+        //   replayConfig.interval = convertToNearest30(replayConfig.interval);
         replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
-        replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
+        //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
         replayCut(null, false);
         // replayCut(35);
       } else if (e.code === 'Quote') {
         replayConfig.interval = parseInt(video.duration / 2);
-        replayConfig.interval = convertToNearest30(replayConfig.interval);
+        //   replayConfig.interval = convertToNearest30(replayConfig.interval);
         replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
-        replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
+        //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
         replayCut(null, false);
         // replayCut(65);
       } else if (e.code === 'Backslash') {
