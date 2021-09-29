@@ -474,6 +474,7 @@ function playPause() {
   } else {
     video.pause();
   }
+  notify.display(`Playback Status:  ${video.paused ? 'PAUSED!' : 'PLAY!'}`);
 }
 
 function replayCut(offSet, renormalize = true) {
