@@ -24,8 +24,10 @@ const replayConfig = {
   startPosition: 0,
   endPosition: 120,
   unsubscribe: null,
-  endOffset: 120,
+  defaultStartOffset: 30,
+  defaultEndOffset: 120,
   startOffset: 30,
+  interval: 120,
   cachedPlaybackRate: 2.0,
 };
 
@@ -35,7 +37,7 @@ const alertConfig = {
   alertConfigTwoThirdTime: null,
   speedMode: 1,
   lastKeypressTime: null,
-  delta: 500,
+  delta: 300,
 };
 
 const shiftKeyDoublePressConfig = {
@@ -53,30 +55,30 @@ const rules = [
     action(e) {
       if (e.code === 'Digit9') {
         replayConfig.startPosition = Math.max(
-          replayConfig.startPosition - replayConfig.startOffset,
+          replayConfig.startPosition - replayConfig.defaultStartOffset,
           0
         );
         replayConfig.startPosition = parseInt(replayConfig.startPosition);
         video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Digit0') {
         replayConfig.startPosition = Math.min(
-          replayConfig.startPosition + replayConfig.startOffset,
-          convertToNearest30(replayConfig.endPosition) - replayConfig.endOffset,
+          replayConfig.startPosition + replayConfig.defaultStartOffset,
+          convertToNearest30(replayConfig.endPosition) - replayConfig.defaultEndOffset,
           video.duration
         );
         replayConfig.startPosition = parseInt(replayConfig.startPosition);
         video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Minus') {
         replayConfig.endPosition = Math.max(
-          convertToNearest30(replayConfig.endPosition) - replayConfig.startOffset,
-          replayConfig.startPosition + replayConfig.endOffset,
+          convertToNearest30(replayConfig.endPosition) - replayConfig.defaultStartOffset,
+          replayConfig.startPosition + replayConfig.defaultEndOffset,
           0
         );
         replayConfig.endPosition = parseInt(replayConfig.endPosition);
         //   video.currentTime = replayConfig.startPosition;
       } else if (e.code === 'Equal') {
         replayConfig.endPosition = Math.min(
-          replayConfig.endPosition + replayConfig.startOffset,
+          replayConfig.endPosition + replayConfig.defaultStartOffset,
           video.duration
         );
         replayConfig.endPosition = parseInt(replayConfig.endPosition);
@@ -94,12 +96,22 @@ const rules = [
       );
     },
     action(e) {
-      if (e.code === 'Backslash') {
-        replayCut(parseInt(video.duration));
+      if (e.code === 'Semicolon') {
+        replayConfig.interval = parseInt(video.duration / 4);
+        replayConfig.interval = convertToNearest30(replayConfig.interval);
+        replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
+        replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
+        replayCut(null, false);
+        // replayCut(35);
       } else if (e.code === 'Quote') {
-        replayCut(65);
-      } else if (e.code === 'Semicolon') {
-        replayCut(35);
+        replayConfig.interval = parseInt(video.duration / 2);
+        replayConfig.interval = convertToNearest30(replayConfig.interval);
+        replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
+        replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
+        replayCut(null, false);
+        // replayCut(65);
+      } else if (e.code === 'Backslash') {
+        replayCut(parseInt(video.duration));
       } else if (e.code === 'Enter') {
         notifyReplayStatus();
       }
@@ -297,7 +309,8 @@ const rules = [
     },
     action(e) {
       video.controls = !video.controls;
-      message = ['Speedmode: OFF!', `Controls: ${video.controls}`];
+      const message = `Controls Enabled: ${video.controls}`;
+      notify.display(message);
       return false;
     },
   },
@@ -415,6 +428,7 @@ const rules = [
 ];
 
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
+const convertToNearestX = (num, X) => Math.floor(num / X) * X;
 
 const seekToTime = function (value) {
   const video = document.querySelector('video');
@@ -462,18 +476,39 @@ function playPause() {
   }
 }
 
-function replayCut(offSet) {
+function replayCut(offSet, renormalize = true) {
+  clearTimeout(config.timer);
+
+  clearInterval(alertConfig.alertConfigMidwayTime);
+  clearInterval(alertConfig.alertConfigTwoThirdTime);
+  clearInterval(alertConfig.alertConfigOneThirdTime);
+  //   ========================
+
   if (replayConfig.unsubscribe) {
     clearInterval(replayConfig.unsubscribe);
     replayConfig.unsubscribe = null;
-    //  replayConfig.startPosition = 0;
 
-    setSpeed(replayConfig.cachedPlaybackRate || 3);
-    video.currentTime = replayConfig.endPosition;
+    // setSpeed(replayConfig.cachedPlaybackRate || 3);
+    // video.currentTime = replayConfig.endPosition;
     notify.display('Replay: Stopped!');
   } else {
-    replayConfig.startPosition = Math.max(convertToNearest30(video.currentTime) - offSet, 0);
-    replayConfig.endPosition = Math.min(replayConfig.startPosition + offSet, video.duration);
+    if (renormalize) {
+      replayConfig.startPosition = Math.max(convertToNearest30(video.currentTime) - offSet, 0);
+      replayConfig.endPosition = Math.min(replayConfig.startPosition + offSet, video.duration);
+    } else {
+      replayConfig.startPosition = Math.max(replayConfig.startOffset, 0);
+      replayConfig.endPosition = Math.min(
+        replayConfig.startPosition + replayConfig.interval,
+        video.duration
+      );
+    }
+    //  } else {
+    //    replayConfig.startPosition = Math.max(replayConfig.startOffset, 0);
+    //    replayConfig.endPosition = Math.min(
+    //      replayConfig.startPosition + replayConfig.interval,
+    //      video.duration
+    //    );
+    //  }
 
     setSpeed(2);
     video.currentTime = replayConfig.startPosition;
@@ -545,7 +580,7 @@ function alertMidWay() {
   alertConfig.speedMode == 2 && setSpeed(2.5, false);
   //   =================
 
-  const standardLength = 10 * 60; //10mins
+  //   const standardLength = 10 * 60; //10mins
   //   const minimumLength = 6 * 60; //6mins
   //   if (video.duration < minimumLength) return;
   //   =================>
@@ -601,7 +636,7 @@ function alertMidWay() {
   }, 2000);
 }
 
-video.addEventListener('seeked', alertMidWay);
+// video.addEventListener('seeked', alertMidWay);
 video.addEventListener('loadeddata', () => {
   alertMidWay();
   const videoTitle = `${video.origin.name}  `;
@@ -651,26 +686,29 @@ function handleMultipleKeyPress(evt) {
   if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[189]) {
     //   backspace & Minus
     replayConfig.startPosition = Math.max(
-      replayConfig.startPosition - replayConfig.startOffset,
+      replayConfig.startPosition - replayConfig.interval,
       0
     );
     replayConfig.endPosition = Math.min(
-      replayConfig.startPosition + replayConfig.endOffset,
+      replayConfig.startPosition + replayConfig.interval,
       video.duration
     );
     video.currentTime = replayConfig.startPosition;
   } else if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[187]) {
     //   backspace & Equal
+    replayConfig.startPosition = Math.min(
+      replayConfig.startPosition + replayConfig.interval,
+      video.duration - replayConfig.interval
+    );
     replayConfig.endPosition = Math.min(
-      convertToNearest30(replayConfig.endPosition) + replayConfig.startOffset,
+      replayConfig.startPosition + replayConfig.interval,
       video.duration
     );
-    replayConfig.startPosition = Math.max(
-      convertToNearest30(replayConfig.endPosition) - replayConfig.endOffset,
-      0
-    );
-    //  console.error('dn-startPosition==: ', replayConfig.startPosition);
-    //  console.error('dn-endPosition: ', replayConfig.endPosition);
+    //  replayConfig.endPosition = Math.min(
+    //    replayConfig.endPosition + replayConfig.interval,
+    //    video.duration
+    //  );
+    //  replayConfig.startPosition = Math.max(replayConfig.endPosition - replayConfig.interval, 0);
     video.currentTime = replayConfig.startPosition;
   }
 }
