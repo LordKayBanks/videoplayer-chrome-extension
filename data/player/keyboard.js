@@ -122,10 +122,10 @@ const rules = [
   },
   {
     condition(meta, code, shift) {
-      return code === 'KeyA' || code === 'KeyS';
+      return code === 'KeyA' || code === 'KeyS' || code === 'Comma' || code === 'Period';
     },
     action(e) {
-      if (e.code === 'KeyA') {
+      if (e.code === 'KeyA' || e.code === 'Comma') {
         moveToPreviousPlaybackRange();
       } else {
         moveToNextPlaybackRange();
