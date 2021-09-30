@@ -638,10 +638,19 @@ function alertMidWay() {
   }, 2000);
 }
 
+// =================================================
+// =================================================
 // video.addEventListener('seeked', alertMidWay);
 video.addEventListener('loadeddata', () => {
-  clearInterval(replayConfig.unsubscribe);
+  //   clearInterval(replayConfig.unsubscribe);
   alertMidWay();
+  if (replayConfig.unsubscribe) {
+    replayConfig.unsubscribe = null;
+    const shortVideoSplit = video.duration < 30 * 60 ? 4 : 8;
+    replayConfig.interval = parseInt(video.duration / shortVideoSplit);
+    replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
+    return replayCut(null, false);
+  }
   const videoTitle = `${video.origin.name}  `;
   notify.display(videoTitle, `[${toMinutesandSeconds(video.duration)}]`);
 });
@@ -663,8 +672,8 @@ video.addEventListener('ended', () => {
   clearTimeout(config.timer);
   config.timer = null;
 
-  clearInterval(replayConfig.unsubscribe);
-  replayConfig = {};
+  //   clearInterval(replayConfig.unsubscribe);
+  //   replayConfig = {};
   notify.display(`Toggle Speed Stopped:`);
 });
 
