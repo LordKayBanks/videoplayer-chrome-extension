@@ -517,8 +517,9 @@ function replayCut(offSet, renormalize = true) {
         video.currentTime < replayConfig.startPosition
       ) {
         video.currentTime = replayConfig.startPosition;
-        speedTracker == 3.5 ? (speedTracker = 2) : (speedTracker = 3.5);
-        setSpeed(speedTracker);
+        const speedTOptions = [2, 3.5, 10];
+        speedTracker = (speedTracker + 1) % speedTOptions.length;
+        setSpeed(speedTOptions[speedTracker]);
         notifyReplayStatus();
       }
     }, 1000);
