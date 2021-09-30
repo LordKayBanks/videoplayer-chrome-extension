@@ -437,9 +437,9 @@ function getVideoSplitFactor() {
   if (video.duration >= 30 * 60) videoSplit = 8;
   else if (video.duration >= 20 * 60) videoSplit = 6;
   else if (video.duration >= 10 * 60) videoSplit = 4;
-  else {
-    videoSplit = 2;
-  }
+  else if (video.duration >= 4 * 60) videoSplit = 2;
+  else videoSplit = 1;
+
   return videoSplit;
 }
 
@@ -522,7 +522,11 @@ function replayCut(offSet, renormalize = true) {
     }
 
     setSpeed(2);
-    video.currentTime = parseInt(replayConfig.startPosition);
+    const minDurationForVideoSplitFactor = 4 * 60;
+    video.duration < minDurationForVideoSplitFactor
+      ? (video.currentTime = 0)
+      : (video.currentTime = parseInt(replayConfig.startPosition));
+    //  video.currentTime = parseInt(replayConfig.startPosition);
     replayConfig.unsubscribe = setInterval(() => {
       if (
         video.currentTime >= replayConfig.endPosition - 5 ||
