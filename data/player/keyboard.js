@@ -96,15 +96,17 @@ const rules = [
       );
     },
     action(e) {
+      const shortVideoSplit = video.duration < 30 * 60 ? 4 : 8;
+      const longVideoSplit = video.duration < 30 * 60 ? 2 : 4;
       if (e.code === 'Semicolon') {
-        replayConfig.interval = parseInt(video.duration / 4);
+        replayConfig.interval = parseInt(video.duration / shortVideoSplit);
         //   replayConfig.interval = convertToNearest30(replayConfig.interval);
         replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
         //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
         replayCut(null, false);
         // replayCut(35);
       } else if (e.code === 'Quote') {
-        replayConfig.interval = parseInt(video.duration / 2);
+        replayConfig.interval = parseInt(video.duration / longVideoSplit);
         //   replayConfig.interval = convertToNearest30(replayConfig.interval);
         replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
         //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
@@ -120,39 +122,41 @@ const rules = [
   },
   {
     condition(meta, code, shift) {
-      return code === 'KeyM';
+      return code === 'KeyA' || code === 'KeyS';
     },
-    action() {
-      video.muted = !video.muted;
+    action(e) {
+      if (e.code === 'KeyA') {
+        moveToPreviousPlaybackRange();
+      } else {
+        moveToNextPlaybackRange();
+      }
       return true;
     },
   },
   {
     condition(meta, code, shift) {
-      return code === 'KeyF';
+      return code === 'KeyM' || code === 'KeyF';
     },
-    action() {
-      toggleFullScreen();
+    action(e) {
+      if (e.code === 'KeyM') {
+        video.muted = !video.muted;
+      } else {
+        toggleFullScreen();
+      }
       return true;
     },
   },
   {
     condition(meta, code, shift) {
-      return code === 'ArrowRight';
+      return code === 'ArrowRight' || code === 'ArrowLeft';
     },
     action(event) {
       event.preventDefault();
-      seekToTime(10);
-      return true;
-    },
-  },
-  {
-    condition(meta, code, shift) {
-      return code === 'ArrowLeft';
-    },
-    action(event) {
-      event.preventDefault();
-      seekToTime(-10);
+      if (event.code === 'ArrowRight') {
+        seekToTime(10);
+      } else {
+        seekToTime(-10);
+      }
       return true;
     },
   },
@@ -226,14 +230,14 @@ const rules = [
   {
     // change volume
     condition(meta, code) {
-      if (code === 'KeyQ' || code === 'KeyA') {
+      if (code === 'KeyQ' || code === 'KeyW') {
         return true;
       }
     },
     action(e) {
       const volume = Math.min(
         1,
-        Math.max(0, Math.round(v.volume * 100 + (e.code === 'KeyQ' ? 5 : -5)) / 100)
+        Math.max(0, Math.round(v.volume * 100 + (e.code === 'KeyW' ? 5 : -5)) / 100)
       );
       try {
         v.volume = volume;
@@ -477,6 +481,7 @@ function playPause() {
   notify.display(`Playback Status:  ${video.paused ? 'PAUSED!' : 'PLAY!'}`);
 }
 
+let speedTracker = 2;
 function replayCut(offSet, renormalize = true) {
   clearTimeout(config.timer);
 
@@ -503,22 +508,17 @@ function replayCut(offSet, renormalize = true) {
         video.duration
       );
     }
-    //  } else {
-    //    replayConfig.startPosition = Math.max(replayConfig.startOffset, 0);
-    //    replayConfig.endPosition = Math.min(
-    //      replayConfig.startPosition + replayConfig.interval,
-    //      video.duration
-    //    );
-    //  }
 
     setSpeed(2);
-    video.currentTime = replayConfig.startPosition;
+    video.currentTime = parseInt(replayConfig.startPosition);
     replayConfig.unsubscribe = setInterval(() => {
       if (
         video.currentTime >= replayConfig.endPosition - 5 ||
         video.currentTime < replayConfig.startPosition
       ) {
         video.currentTime = replayConfig.startPosition;
+        speedTracker == 3.5 ? (speedTracker = 2) : (speedTracker = 3.5);
+        setSpeed(speedTracker);
         notifyReplayStatus();
       }
     }, 1000);
@@ -679,6 +679,34 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+function moveToNextPlaybackRange() {
+  replayConfig.startPosition = Math.min(
+    replayConfig.startPosition + replayConfig.interval,
+    video.duration - replayConfig.interval
+  );
+  replayConfig.endPosition = Math.min(
+    replayConfig.startPosition + replayConfig.interval,
+    video.duration
+  );
+  //  replayConfig.endPosition = Math.min(
+  //    replayConfig.endPosition + replayConfig.interval,
+  //    video.duration
+  //  );
+  //  replayConfig.startPosition = Math.max(replayConfig.endPosition - replayConfig.interval, 0);
+  video.currentTime = replayConfig.startPosition;
+  notifyReplayStatus();
+}
+
+function moveToPreviousPlaybackRange() {
+  replayConfig.startPosition = Math.max(replayConfig.startPosition - replayConfig.interval, 0);
+  replayConfig.endPosition = Math.min(
+    replayConfig.startPosition + replayConfig.interval,
+    video.duration
+  );
+  video.currentTime = replayConfig.startPosition;
+  notifyReplayStatus();
+}
+
 var multipleKeysMap = {};
 function handleMultipleKeyPress(evt) {
   let { keyCode, type } = evt || Event; // to deal with IE
@@ -687,31 +715,10 @@ function handleMultipleKeyPress(evt) {
 
   if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[189]) {
     //   backspace & Minus
-    replayConfig.startPosition = Math.max(
-      replayConfig.startPosition - replayConfig.interval,
-      0
-    );
-    replayConfig.endPosition = Math.min(
-      replayConfig.startPosition + replayConfig.interval,
-      video.duration
-    );
-    video.currentTime = replayConfig.startPosition;
+    moveToPreviousPlaybackRange();
   } else if (isKeyDown && multipleKeysMap[8] && multipleKeysMap[187]) {
     //   backspace & Equal
-    replayConfig.startPosition = Math.min(
-      replayConfig.startPosition + replayConfig.interval,
-      video.duration - replayConfig.interval
-    );
-    replayConfig.endPosition = Math.min(
-      replayConfig.startPosition + replayConfig.interval,
-      video.duration
-    );
-    //  replayConfig.endPosition = Math.min(
-    //    replayConfig.endPosition + replayConfig.interval,
-    //    video.duration
-    //  );
-    //  replayConfig.startPosition = Math.max(replayConfig.endPosition - replayConfig.interval, 0);
-    video.currentTime = replayConfig.startPosition;
+    moveToNextPlaybackRange();
   }
 }
 window.addEventListener('keyup', handleMultipleKeyPress);
