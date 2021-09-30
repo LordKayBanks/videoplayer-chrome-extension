@@ -96,23 +96,24 @@ const rules = [
       );
     },
     action(e) {
-      const shortVideoSplit = video.duration < 30 * 60 ? 4 : 8;
-      const longVideoSplit = video.duration < 30 * 60 ? 2 : 4;
+      let videoSplit = getVideoSplitFactor();
+
       if (e.code === 'Semicolon') {
-        replayConfig.interval = parseInt(video.duration / shortVideoSplit);
-        //   replayConfig.interval = convertToNearest30(replayConfig.interval);
+        replayConfig.interval = parseInt(video.duration / videoSplit);
         replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
-        //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
         replayCut(null, false);
-        // replayCut(35);
-      } else if (e.code === 'Quote') {
-        replayConfig.interval = parseInt(video.duration / longVideoSplit);
-        //   replayConfig.interval = convertToNearest30(replayConfig.interval);
-        replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
-        //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
-        replayCut(null, false);
-        // replayCut(65);
-      } else if (e.code === 'Backslash') {
+      }
+      // else if (e.code === 'Quote') {
+      // let shortVideoSplit = video.duration < 30 * 60 ? 4 : 8;
+      // let longVideoSplit = video.duration < 30 * 60 ? 2 : 4;
+      //   replayConfig.interval = parseInt(video.duration / longVideoSplit);
+      //   //   replayConfig.interval = convertToNearest30(replayConfig.interval);
+      //   replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
+      //   //   replayConfig.startOffset = convertToNearest30(replayConfig.startOffset);
+      //   replayCut(null, false);
+      //   // replayCut(65);
+      // }
+      else if (e.code === 'Backslash') {
         replayCut(parseInt(video.duration));
       } else if (e.code === 'Enter') {
         notifyReplayStatus();
@@ -431,6 +432,17 @@ const rules = [
   },
 ];
 
+function getVideoSplitFactor() {
+  let videoSplit;
+  if (video.duration >= 30 * 60) videoSplit = 8;
+  else if (video.duration >= 20 * 60) videoSplit = 6;
+  else if (video.duration >= 10 * 60) videoSplit = 4;
+  else {
+    videoSplit = 2;
+  }
+  return videoSplit;
+}
+
 const convertToNearest30 = (num) => Math.round(num / 30) * 30;
 const convertToNearestX = (num, X) => Math.floor(num / X) * X;
 
@@ -646,8 +658,8 @@ video.addEventListener('loadeddata', () => {
   alertMidWay();
   if (replayConfig.unsubscribe) {
     replayConfig.unsubscribe = null;
-    const shortVideoSplit = video.duration < 30 * 60 ? 4 : 8;
-    replayConfig.interval = parseInt(video.duration / shortVideoSplit);
+    let videoSplit = getVideoSplitFactor();
+    replayConfig.interval = parseInt(video.duration / videoSplit);
     replayConfig.startOffset = convertToNearestX(video.currentTime, replayConfig.interval);
     return replayCut(null, false);
   }
