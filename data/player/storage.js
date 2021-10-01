@@ -1,14 +1,8 @@
 import notify from './notify.js';
 const storage = {};
 
-storage.set = (prefs) =>
-  new Promise((resolve) =>
-    chrome.storage.local.set(prefs, resolve)
-  );
-storage.get = (prefs) =>
-  new Promise((resolve) =>
-    chrome.storage.local.get(prefs, resolve)
-  );
+storage.set = (prefs) => new Promise((resolve) => chrome.storage.local.set(prefs, resolve));
+storage.get = (prefs) => new Promise((resolve) => chrome.storage.local.get(prefs, resolve));
 
 const video = document.querySelector('video');
 
@@ -20,33 +14,24 @@ storage
     speed: 4.0,
   })
   .then((prefs) => {
-    document.getElementById('repeat').dataset.mode =
-      prefs.repeat;
-    document.getElementById('speed').dataset.mode =
-      prefs.speed + 'x';
+    document.getElementById('repeat').dataset.mode = prefs.repeat;
+    document.getElementById('speed').dataset.mode = prefs.speed + 'x';
     video.volume = prefs.volume;
     video.playbackRate = prefs.speed;
   });
-document
-  .getElementById('repeat')
-  .addEventListener('click', (e) =>
-    chrome.storage.local.set({
-      repeat: e.target.dataset.mode,
-    })
-  );
-document
-  .getElementById('speed')
-  .addEventListener('click', (e) =>
-    chrome.storage.local.set(
-      {
-        speed: parseFloat(e.target.dataset.mode),
-      },
-      () =>
-        notify.display(
-          'Speed: ' + e.target.dataset.mode.toUpperCase()
-        )
-    )
-  );
+document.getElementById('repeat').addEventListener('click', (e) =>
+  chrome.storage.local.set({
+    repeat: e.target.dataset.mode,
+  })
+);
+document.getElementById('speed').addEventListener('click', (e) =>
+  chrome.storage.local.set(
+    {
+      speed: parseFloat(e.target.dataset.mode),
+    },
+    () => notify.display('Speed: ' + e.target.dataset.mode.toUpperCase())
+  )
+);
 video.addEventListener('volumechange', (e) => {
   chrome.storage.local.set({
     volume: e.target.volume,

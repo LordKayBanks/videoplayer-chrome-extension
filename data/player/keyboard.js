@@ -1,4 +1,5 @@
 import notify from './notify.js';
+import storage from './storage.js';
 
 // const rangeBasic = [2.5, 3.25, 2.5, 3.25, 3, 3.5, 3, 3.5]; /*3.0*/
 const rangeBasic = [
@@ -476,19 +477,67 @@ function increaseSpeed(value = 0.25) {
   updateSpeedIcon(newSpeed);
 }
 
-const notifyReplayStatus = () => {
+function notifyReplayStatus() {
   const currentSplit = parseInt(replayConfig.endPosition / replayConfig.interval);
   const totalSplit = parseInt(video.duration / replayConfig.interval);
-  notify.display(
-    `Replay: is ${
+  const videoTitle = document.querySelector(
+    '#playlist > li.active > span:nth-child(1)'
+  ).textContent;
+
+  chrome.storage.local.get('reviews', ({ reviews }) => {
+    let videoStat =
+      reviews && reviews[JSON.stringify(videoTitle)]?.replayHistory[`split-${currentSplit}`];
+    //  const videoStat = Object.keys(reviews)
+    //    .map((key) => reviews[key])
+    //    .filter((review) => review.title === videoTitle)[0].replayHistory[`split-${currentSplit}`];
+    //  videoStat = reviews[video.src]?.replayHistory[`split-${currentSplit}`];
+    //  videoStat = reviews[video.src];
+    notify.display(
+      `Video Stats: Split watch count:: ${videoStat ?? 0} times!
+    \r\n\r\nReplay: is ${
       !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
     }\r\nStart Time: ${toMinutesandSeconds(
-      replayConfig.startPosition
-    )}\r\nEnd Time:  ${toMinutesandSeconds(replayConfig.endPosition)}`,
-    `\r\nPosition:   [${currentSplit}] of [${totalSplit}]`,
-    20000
-  );
-};
+        replayConfig.startPosition
+      )}\r\nEnd Time:  ${toMinutesandSeconds(replayConfig.endPosition)}`,
+      `\r\nPosition:   [${currentSplit}] of [${totalSplit}]`,
+      20000
+    );
+  });
+}
+
+function studyStatisticsTracker() {
+  const currentSplit = parseInt(replayConfig.endPosition / replayConfig.interval);
+  chrome.storage.local.get('reviews', ({ reviews }) => {
+    const reviewExists = !!reviews;
+    let updatedReview = reviewExists ? reviews : {};
+    const videoTitle = document.querySelector(
+      '#playlist > li.active > span:nth-child(1)'
+    ).textContent;
+    //  let review = updatedReview[video.src];
+    let review = updatedReview[JSON.stringify(videoTitle)];
+    if (!review) {
+      review = {
+        title: videoTitle,
+        replayHistory: { [`split-${currentSplit}`]: 1 },
+        lastReviewDate: Date.now(),
+      };
+    } else {
+      if (review.replayHistory[`split-${currentSplit}`]) {
+        review.replayHistory[`split-${currentSplit}`] =
+          review.replayHistory[`split-${currentSplit}`] + 1;
+      } else {
+        review.replayHistory[`split-${currentSplit}`] = 1;
+      }
+      review.lastReviewDate = Date.now();
+    }
+
+    //  updatedReview[video.src] = { ...review };
+    updatedReview[JSON.stringify(videoTitle)] = { ...review };
+    chrome.storage.local.set({ reviews: { ...updatedReview } }, () => {
+      notifyReplayStatus();
+    });
+  });
+}
 
 function playPause() {
   if (video.paused) {
@@ -543,7 +592,9 @@ function replayCut(offSet, renormalize = true) {
         const speedTOptions = [2, 3, 10];
         speedTracker = (speedTracker + 1) % speedTOptions.length;
         setSpeed(speedTOptions[speedTracker]);
-        notifyReplayStatus();
+        // ===================
+        studyStatisticsTracker();
+        //   notifyReplayStatus();
       }
     }, 1000);
 
