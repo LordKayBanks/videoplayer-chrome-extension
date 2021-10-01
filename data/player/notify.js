@@ -18,9 +18,7 @@ toast.style = `
   color:white;
   visibility: hidden;
   border-radius: 10px;
-  border: 2px solid red;
-  border-bottom: 2px solid lime;
-  border-left: 2px solid lime;
+  border: 2px solid lime;
   animation: blinking 5s infinite;
   animation-timing-function: cubic-bezier(0.230, 1.000, 0.320, 1.000);
 }

@@ -437,7 +437,7 @@ function getVideoSplitFactor() {
   if (video.duration >= 30 * 60) videoSplit = 8;
   else if (video.duration >= 20 * 60) videoSplit = 6;
   else if (video.duration >= 10 * 60) videoSplit = 4;
-  else if (video.duration >= 4 * 60) videoSplit = 2;
+  else if (video.duration >= 5 * 60) videoSplit = 2;
   else videoSplit = 1;
 
   return videoSplit;
@@ -476,13 +476,19 @@ function increaseSpeed(value = 0.25) {
   updateSpeedIcon(newSpeed);
 }
 
-const notifyReplayStatus = () =>
+const notifyReplayStatus = () => {
+  const currentSplit = parseInt(replayConfig.endPosition / replayConfig.interval);
+  const totalSplit = parseInt(video.duration / replayConfig.interval);
   notify.display(
     `Replay: is ${
       !!replayConfig.unsubscribe ? 'ON!:' : 'OFF!:'
-    }\r\nStartPosition: ${toMinutesandSeconds(replayConfig.startPosition)}`,
-    `\r\nEndPosition:  <${toMinutesandSeconds(replayConfig.endPosition)}>`
+    }\r\nStart Time: ${toMinutesandSeconds(
+      replayConfig.startPosition
+    )}\r\nEnd Time:  ${toMinutesandSeconds(replayConfig.endPosition)}`,
+    `\r\nPosition:   [${currentSplit}] of [${totalSplit}]`,
+    20000
   );
+};
 
 function playPause() {
   if (video.paused) {
@@ -522,7 +528,7 @@ function replayCut(offSet, renormalize = true) {
     }
 
     setSpeed(2);
-    const minDurationForVideoSplitFactor = 4 * 60;
+    const minDurationForVideoSplitFactor = 5 * 60;
     video.duration < minDurationForVideoSplitFactor
       ? (video.currentTime = 0)
       : (video.currentTime = parseInt(replayConfig.startPosition));
@@ -533,7 +539,8 @@ function replayCut(offSet, renormalize = true) {
         video.currentTime < replayConfig.startPosition
       ) {
         video.currentTime = replayConfig.startPosition;
-        const speedTOptions = [2, 3.5, 10];
+        //   const speedTOptions = [2, 3.5, 10];
+        const speedTOptions = [2, 3, 10];
         speedTracker = (speedTracker + 1) % speedTOptions.length;
         setSpeed(speedTOptions[speedTracker]);
         notifyReplayStatus();
